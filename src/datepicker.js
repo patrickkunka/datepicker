@@ -103,6 +103,12 @@
             }
 
             return null;
+        },
+
+        pad: function(int) {
+            int = parseInt(int);
+
+            return int < 10 ? '0' + int.toString() : int.toString();
         }
     };
 
@@ -112,7 +118,9 @@
         this.refs               = new DatePicker.Dom();
         this.config             = new DatePicker.Config();
         this.calendarHandlers   = [];
+        this.value              = '';
         this.isShown            = false;
+        this.isFocussing        = false;
 
         h.extend(this.config, config);
 
@@ -176,20 +184,31 @@
         },
 
         handleFocus: function() {
-            if (this.isShown) return;
+            var self = this;
 
-            this.build();
+            if (self.isShown) return;
+
+            self.isFocussing = true;
+
+            setTimeout(function() {
+                self.isFocussing = false;
+            }, 200);
+
+            self.build();
         },
 
         handleWindowClick: function() {
-            // if (!this.isShown) return;
+            if (!this.isShown || this.isFocussing) return;
 
-            // this.destroy();
+            this.destroy();
         },
 
         handleHeaderClick: function(e) {
             var button;
             var action;
+            var state;
+            var data;
+            var html;
 
             e.stopPropagation();
 
@@ -197,17 +216,23 @@
 
             if (!button) return;
 
-            action = button.getAttribute('data-act');
+            action = button.getAttribute('data-act').toUpperCase().replace(/-/g, '_');
 
-            action = action.toUpperCase().replace(/-/g, '_');
+            state = this.getStateFromAction(this.state, action);
+            data  = this.getMonthData(state);
+            html  = this.render(data);
 
-            console.log(action);
+            this.updateView(html);
+
+            this.state = state;
         },
 
         handleTbodyClick: function(e) {
             var cell;
             var month;
             var day;
+            var date;
+            var onSelect;
 
             e.stopPropagation();
 
@@ -215,20 +240,28 @@
 
             if (!cell) return;
 
-            day   = cell.getAttribute('data-day');
-            month = cell.getAttribute('data-month');
+            day   = parseInt(cell.getAttribute('data-day'));
+            month = parseInt(cell.getAttribute('data-month'));
 
-            console.log('select:', this.state.year, month, day);
+            date = this.state.year + '-' + h.pad(month) + '-' + h.pad(day);
+
+            this.value = date;
+
+            if (typeof (onSelect = this.config.callbacks.onSelect) === 'function') {
+                onSelect(date);
+            }
+
+            this.destroy();
         },
 
-        build: function(date) {
+        build: function() {
             var self = this;
             var state;
             var data;
             var html;
 
-            if (date) {
-                state = self.getStateFromDate(date);
+            if (this.value) {
+                state = self.getStateFromDate(this.value);
             } else {
                 state = self.getStateFromToday();
             }
@@ -276,36 +309,22 @@
         },
 
         getStateFromDate: function(inputDate) {
-            inputDate;
+            var state = new DatePicker.State();
+            var date  = new Date(inputDate);
 
-            // var state = new DatePicker.State();
-            // var date  = new Date();
+            state.year       = date.getFullYear();
+            state.monthIndex = date.getMonth();
+            state.selected   = date.getDate();
 
-            // // .. parse date into data
-
-            // state.totalDays = new Date(currentYear, currentMonth + 1, 0).getDate();
-            // state.previousTotalDays = new Date(currentYear, currentMonth, 0).getDate();
-            // state.year = currentYear;
-            // state.monthIndex = currentMonth;
-            // state.today = currentDay;
-            // state.startDayIndex = new Date(currentYear, currentMonth, 1).getDay();
-
-            // return state;
+            return state;
         },
 
         getStateFromToday: function() {
             var state         = new DatePicker.State();
             var date          = new Date();
-            var currentYear   = date.getFullYear();
-            var currentMonth  = date.getMonth();
-            var currentDay    = date.getDate();
 
-            state.totalDays = new Date(currentYear, currentMonth + 1, 0).getDate();
-            state.previousTotalDays = new Date(currentYear, currentMonth, 0).getDate();
-            state.year = currentYear;
-            state.monthIndex = currentMonth;
-            state.today = currentDay;
-            state.startDayIndex = new Date(currentYear, currentMonth, 1).getDay();
+            state.year       = date.getFullYear();
+            state.monthIndex = date.getMonth();
 
             return state;
         },
@@ -317,7 +336,7 @@
 
             Object.assign(state, oldState);
 
-            if ((actionFn = typeof DatePicker.ACTIONS[action]) === 'function') {
+            if (typeof (actionFn = DatePicker.ACTIONS[action]) === 'function') {
                 actionFn.apply(state, args);
             } else {
                 throw new Error('Action "' + action + '" not found');
@@ -407,10 +426,11 @@
 
                     day = new DatePicker.Day();
 
-                    day.dayIndex  = j;
-                    day.dayNumber = currentDayNumber;
-                    day.isPadding = zone !== 'self';
-                    day.isToday   = currentDayNumber === state.today;
+                    day.dayIndex    = j;
+                    day.dayNumber   = currentDayNumber;
+                    day.isPadding   = zone !== 'self';
+                    day.isToday     = currentDayNumber === state.today;
+                    day.isSelected  = currentDayNumber === state.selected;
 
                     day.monthNumber = state.monthIndex + 1;
 
@@ -494,8 +514,6 @@
 
             this.refs.input.parentElement.insertBefore(this.refs.root, this.refs.input.nextElementSibling);
 
-            console.log(this.refs);
-
             return Promise.resolve();
         },
 
@@ -503,6 +521,21 @@
             this.refs.root.style.opacity = 0;
 
             return Promise.resolve();
+        },
+
+        updateView: function(html) {
+            var temp = document.createElement('div');
+
+            temp.innerHTML = html;
+
+            this.unbindCalendarHandlers();
+
+            this.refs.root.innerHTML = temp.firstChild.innerHTML;
+
+            this.refs.header = this.refs.root.querySelector('[data-ref="header"]');
+            this.refs.tbody  = this.refs.root.querySelector('[data-ref="tbody"]');
+
+            this.bindCalendarHandlers();
         }
     });
 
@@ -513,11 +546,36 @@
         State: function() {
             this.year               = -1;
             this.monthIndex         = -1;
-            this.today              = -1;
             this.selected           = -1;
-            this.startDayIndex      = -1;
-            this.totalDays          = -1;
-            this.previousTotalDays  = -1;
+
+            Object.defineProperties(this, {
+                totalDays: {
+                    get: function() {
+                        return new Date(this.year, this.monthIndex + 1, 0).getDate();
+                    }
+                },
+                previousTotalDays: {
+                    get: function() {
+                        return new Date(this.year, this.monthIndex, 0).getDate();
+                    }
+                },
+                startDayIndex: {
+                    get: function() {
+                        return new Date(this.year, this.monthIndex, 1).getDay();
+                    }
+                },
+                today: {
+                    get: function() {
+                        var date = new Date();
+
+                        if (this.monthIndex === date.getMonth() && this.year === date.getFullYear()) {
+                            return date.getDate();
+                        } else {
+                            return -1;
+                        }
+                    }
+                }
+            });
 
             Object.seal(this);
         },
@@ -606,6 +664,7 @@
 
         Config: function() {
             this.classNames = new DatePicker.ConfigClassNames();
+            this.callbacks  = new DatePicker.ConfigCallbacks();
 
             Object.seal(this);
         },
@@ -622,6 +681,7 @@
             this.elementHeading     = 'heading';
             this.modifierActive     = 'active';
             this.modifierToday      = 'today';
+            this.modifierSelected   = 'selected';
             this.modifierPadding    = 'padding';
             this.modifierWeekend    = 'weekend';
             this.modifierNextMonth  = 'next-month';
@@ -634,8 +694,14 @@
             Object.seal(this);
         },
 
+        ConfigCallbacks: function() {
+            this.onSelect = null;
+        },
+
         Actions: function() {
             this.GO_TO_NEXT_MONTH = function() {
+                this.selected = -1;
+
                 if (this.monthIndex === 11) {
                     this.monthIndex = 0;
                     this.year++;
@@ -645,6 +711,8 @@
             };
 
             this.GO_TO_PREV_MONTH = function() {
+                this.selected = -1;
+
                 if (this.monthIndex === 0) {
                     this.monthIndex = 11;
                     this.year--;
@@ -654,10 +722,14 @@
             };
 
             this.GO_TO_NEXT_YEAR = function() {
+                this.selected = -1;
+
                 this.year++;
             };
 
             this.GO_TO_PREV_YEAR = function() {
+                this.selected = -1;
+
                 this.year--;
             };
 
