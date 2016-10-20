@@ -312,9 +312,11 @@
             var state = new DatePicker.State();
             var date  = new Date(inputDate);
 
-            state.year       = date.getFullYear();
-            state.monthIndex = date.getMonth();
-            state.selected   = date.getDate();
+            state.year          = date.getFullYear();
+            state.monthIndex    = date.getMonth();
+            state.selectedYear  = state.year;
+            state.selectedMonth = state.monthIndex;
+            state.selectedDay   = date.getDate();
 
             return state;
         },
@@ -430,7 +432,15 @@
                     day.dayNumber   = currentDayNumber;
                     day.isPadding   = zone !== 'self';
                     day.isToday     = currentDayNumber === state.today;
-                    day.isSelected  = currentDayNumber === state.selected;
+
+                    if (
+                        currentDayNumber === state.selectedDay &&
+                        month.monthIndex === state.selectedMonth &&
+                        state.year === state.selectedYear &&
+                        zone === 'self'
+                    ) {
+                        day.isSelected = true;
+                    }
 
                     day.monthNumber = state.monthIndex + 1;
 
@@ -546,7 +556,9 @@
         State: function() {
             this.year               = -1;
             this.monthIndex         = -1;
-            this.selected           = -1;
+            this.selectedDay        = -1;
+            this.selectedMonth      = -1;
+            this.selectedYear       = -1;
 
             Object.defineProperties(this, {
                 totalDays: {
@@ -700,8 +712,6 @@
 
         Actions: function() {
             this.GO_TO_NEXT_MONTH = function() {
-                this.selected = -1;
-
                 if (this.monthIndex === 11) {
                     this.monthIndex = 0;
                     this.year++;
@@ -711,8 +721,6 @@
             };
 
             this.GO_TO_PREV_MONTH = function() {
-                this.selected = -1;
-
                 if (this.monthIndex === 0) {
                     this.monthIndex = 11;
                     this.year--;
@@ -722,14 +730,10 @@
             };
 
             this.GO_TO_NEXT_YEAR = function() {
-                this.selected = -1;
-
                 this.year++;
             };
 
             this.GO_TO_PREV_YEAR = function() {
-                this.selected = -1;
-
                 this.year--;
             };
 
