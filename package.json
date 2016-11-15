@@ -2,5 +2,5 @@
   "name": "datepicker",
   "version": "0.0.0",
   "private": true,
-  "main": "./src/datepicker.js",
+  "main": "./src/datepicker.js"
 }
