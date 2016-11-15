@@ -291,7 +291,9 @@
 
             return self.hide()
                 .then(function() {
-                    self.refs.root.parentElement.removeChild(self.refs.root);
+                    if (self.refs.root) {
+                        self.refs.root.parentElement.removeChild(self.refs.root);
+                    }
 
                     self.unbindCalendarHandlers();
 
@@ -528,7 +530,9 @@
         },
 
         hide: function() {
-            this.refs.root.style.opacity = 0;
+            if (this.refs.root) {
+                this.refs.root.style.opacity = 0;
+            }
 
             return Promise.resolve();
         },
