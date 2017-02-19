@@ -23,6 +23,14 @@ class Datepicker {
         this.setValue   = _.setValue.bind(_);
         this.destroy    = _.destroy.bind(_);
 
+        Object.defineProperties(this, {
+            input: {
+                get() {
+                    return _.dom.input;
+                }
+            }
+        });
+
         Object.freeze(this);
     }
 }
@@ -56,7 +64,7 @@ class _Datepicker {
 
         this.configure(config);
 
-        this.bindingsInput.concat(this.bindEvents(eventsInput));
+        this.bindingsInput.push(...this.bindEvents(eventsInput));
     }
 
     /**
@@ -117,6 +125,8 @@ class _Datepicker {
      */
 
     unbindEvents(eventBindings) {
+        console.log('unbinding', eventBindings);
+
         while (eventBindings.length) {
             const binding = eventBindings.pop();
 
@@ -226,7 +236,7 @@ class _Datepicker {
                 this.dom.header = this.dom.root.querySelector('[data-ref="header"]');
                 this.dom.tbody  = this.dom.root.querySelector('[data-ref="tbody"]');
 
-                this.bindingsCalendar.concat(this.bindEvents(eventsCalendar));
+                this.bindingsCalendar.push(...this.bindEvents(eventsCalendar));
 
                 this.state = state;
 
@@ -547,7 +557,7 @@ class _Datepicker {
         this.dom.header = this.dom.root.querySelector('[data-ref="header"]');
         this.dom.tbody  = this.dom.root.querySelector('[data-ref="tbody"]');
 
-        this.bindingsCalendar.concat(this.bindEvents(eventsCalendar));
+        this.bindingsCalendar.push(...this.bindEvents(eventsCalendar));
     }
 
     /**

@@ -77,7 +77,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	
 	    for (var i = 0; instance = _Datepicker2.default.cache[i]; i++) {
-	        if (instance.dom.input === input) return instance;
+	        if (instance.input === input) return instance;
 	    }
 	
 	    instance = new _Datepicker2.default(input, config);
@@ -155,6 +155,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
+	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
 	var Datepicker = function Datepicker() {
@@ -167,6 +169,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	    this.getValue = _.getValue.bind(_);
 	    this.setValue = _.setValue.bind(_);
 	    this.destroy = _.destroy.bind(_);
+	
+	    Object.defineProperties(this, {
+	        input: {
+	            get: function get() {
+	                return _.dom.input;
+	            }
+	        }
+	    });
 	
 	    Object.freeze(this);
 	};
@@ -181,6 +191,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	     */
 	
 	    function _Datepicker(input) {
+	        var _bindingsInput;
+	
 	        var config = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 	
 	        _classCallCheck(this, _Datepicker);
@@ -204,7 +216,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	        this.configure(config);
 	
-	        this.bindingsInput.concat(this.bindEvents(_eventsInput2.default));
+	        (_bindingsInput = this.bindingsInput).push.apply(_bindingsInput, _toConsumableArray(this.bindEvents(_eventsInput2.default)));
 	    }
 	
 	    /**
@@ -277,6 +289,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }, {
 	        key: 'unbindEvents',
 	        value: function unbindEvents(eventBindings) {
+	            console.log('unbinding', eventBindings);
+	
 	            while (eventBindings.length) {
 	                var binding = eventBindings.pop();
 	
@@ -398,10 +412,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var html = this.render(data);
 	
 	            return this.show(html).then(function () {
+	                var _bindingsCalendar;
+	
 	                _this3.dom.header = _this3.dom.root.querySelector('[data-ref="header"]');
 	                _this3.dom.tbody = _this3.dom.root.querySelector('[data-ref="tbody"]');
 	
-	                _this3.bindingsCalendar.concat(_this3.bindEvents(_eventsCalendar2.default));
+	                (_bindingsCalendar = _this3.bindingsCalendar).push.apply(_bindingsCalendar, _toConsumableArray(_this3.bindEvents(_eventsCalendar2.default)));
 	
 	                _this3.state = state;
 	
@@ -718,6 +734,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }, {
 	        key: 'updateView',
 	        value: function updateView(html) {
+	            var _bindingsCalendar2;
+	
 	            var temp = document.createElement('div');
 	
 	            temp.innerHTML = html;
@@ -729,7 +747,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            this.dom.header = this.dom.root.querySelector('[data-ref="header"]');
 	            this.dom.tbody = this.dom.root.querySelector('[data-ref="tbody"]');
 	
-	            this.bindingsCalendar.concat(this.bindEvents(_eventsCalendar2.default));
+	            (_bindingsCalendar2 = this.bindingsCalendar).push.apply(_bindingsCalendar2, _toConsumableArray(this.bindEvents(_eventsCalendar2.default)));
 	        }
 	
 	        /**

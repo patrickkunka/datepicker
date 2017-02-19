@@ -13,7 +13,7 @@ function factory(input, config={}) {
     }
 
     for (let i = 0; (instance = Datepicker.cache[i]); i++) {
-        if (instance.dom.input === input) return instance;
+        if (instance.input === input) return instance;
     }
 
     instance = new Datepicker(input, config);
