@@ -99,6 +99,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	    value: true
 	});
 	
+	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
 	var _State = __webpack_require__(2);
@@ -191,8 +193,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	     */
 	
 	    function _Datepicker(input) {
-	        var _bindingsInput;
-	
 	        var config = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 	
 	        _classCallCheck(this, _Datepicker);
@@ -208,27 +208,73 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	        Object.seal(this);
 	
-	        if (!(input instanceof HTMLInputElement)) {
-	            throw new TypeError('[Datepicker] No valid input element provided');
-	        }
-	
-	        this.dom.input = input;
-	
-	        this.configure(config);
-	
-	        (_bindingsInput = this.bindingsInput).push.apply(_bindingsInput, _toConsumableArray(this.bindEvents(_eventsInput2.default)));
+	        this.init(input, config);
 	    }
+	
+	    /* Private Methods
+	    ---------------------------------------------------------------------- */
 	
 	    /**
 	     * @private
-	     * @param   {object} config
-	     * @return  {void}
+	     * @return {void}
 	     */
 	
 	    _createClass(_Datepicker, [{
+	        key: 'init',
+	        value: function init(input, config) {
+	            var _bindingsInput;
+	
+	            if (!(input instanceof HTMLInputElement)) {
+	                throw new TypeError('[Datepicker] Invalid input element provided');
+	            }
+	
+	            if (!config || (typeof config === 'undefined' ? 'undefined' : _typeof(config)) !== 'object') {
+	                throw new TypeError('[Datepicker] Invalid configuration object provided');
+	            }
+	
+	            this.dom.input = input;
+	
+	            this.configure(config);
+	            this.parseInitialValue();
+	            (_bindingsInput = this.bindingsInput).push.apply(_bindingsInput, _toConsumableArray(this.bindEvents(_eventsInput2.default)));
+	        }
+	
+	        /**
+	         * @private
+	         * @param   {object} config
+	         * @return  {void}
+	         */
+	
+	    }, {
 	        key: 'configure',
 	        value: function configure(config) {
-	            _Util2.default.extend(this.config, config);
+	            _Util2.default.extend(this.config, config, true, _Datepicker.handleConfigureError.bind(this));
+	        }
+	
+	        /**
+	         * @private
+	         * @return {void}
+	         */
+	
+	    }, {
+	        key: 'parseInitialValue',
+	        value: function parseInitialValue() {
+	            var value = '';
+	            var transform = null;
+	
+	            if (!(value = this.dom.input.value)) return;
+	
+	            if (typeof (transform = this.config.transform.input) !== 'function') {
+	                this.value = value;
+	
+	                return;
+	            }
+	
+	            this.value = transform(value);
+	
+	            if (!this.value || typeof this.value !== 'string') {
+	                throw new TypeError('[Datepicker] Transform functions must return a valid string');
+	            }
 	        }
 	
 	        /**
@@ -342,9 +388,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var button = _Util2.default.closestParent(e.target, '[data-ref~="button"]', true);
 	
 	            var action = '';
-	            var html = '';
-	            var state = null;
-	            var data = null;
 	
 	            e.stopPropagation();
 	
@@ -352,13 +395,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	            action = button.getAttribute('data-action');
 	
-	            state = this.getStateFromAction(this.state, action);
-	            data = this.getMonthData(state);
-	            html = this.render(data);
-	
-	            this.updateView(html);
-	
-	            this.state = state;
+	            this.updateState(action);
 	        }
 	
 	        /**
@@ -370,11 +407,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	        key: 'handleTbodyClick',
 	        value: function handleTbodyClick(e) {
 	            var cell = _Util2.default.closestParent(e.target, '[data-ref="day"]', true);
+	            var event = new CustomEvent('change', {
+	                bubbles: true,
+	                cancelable: true
+	            });
 	
 	            var day = -1;
 	            var month = -1;
 	            var date = '';
-	            var onSelect = null;
+	            var callback = null;
+	            var transform = null;
 	
 	            e.stopPropagation();
 	
@@ -386,13 +428,62 @@ return /******/ (function(modules) { // webpackBootstrap
 	            date = this.state.year + '-' + _Util2.default.pad(month) + '-' + _Util2.default.pad(day);
 	
 	            this.value = date;
-	            this.dom.input.value = this.value;
 	
-	            if (typeof (onSelect = this.config.callbacks.onSelect) === 'function') {
-	                onSelect(this.value);
+	            if (typeof (transform = this.config.transform.output) === 'function') {
+	                this.dom.input.value = transform(this.value);
+	            } else {
+	                this.dom.input.value = this.value;
 	            }
 	
-	            this.unbuild();
+	            if (!this.dom.input.value) {
+	                throw new TypeError('[Datepicker] Transform must return a valid string');
+	            }
+	
+	            if (typeof (callback = this.config.callbacks.onSelect) === 'function') {
+	                callback(this.value);
+	            }
+	
+	            this.dom.input.dispatchEvent(event);
+	
+	            if (this.config.behavior.closeOnSelect) {
+	                this.unbuild();
+	            } else {
+	                this.updateState();
+	            }
+	        }
+	
+	        /**
+	         * @private
+	         * @param   {string} [action='']
+	         * @return  {Promise}
+	         */
+	
+	    }, {
+	        key: 'updateState',
+	        value: function updateState() {
+	            var _this3 = this;
+	
+	            var action = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
+	
+	            var state = action ? _Datepicker.getStateFromAction(this.state, action) : _Datepicker.getStateFromDate(this.value);
+	            var data = this.getMonthData(state);
+	            var html = this.render(data);
+	
+	            this.state = state;
+	
+	            return this.updateView(html, action).then(function () {
+	                var callback = null;
+	
+	                if (action) {
+	                    callback = _this3.config.callbacks.onChangeView;
+	                }
+	
+	                if (typeof callback === 'function') {
+	                    callback();
+	                }
+	            }).catch(function (err) {
+	                return console.error(err);
+	            });
 	        }
 	
 	        /**
@@ -403,23 +494,29 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }, {
 	        key: 'build',
 	        value: function build() {
-	            var _this3 = this;
+	            var _this4 = this;
 	
-	            var state = this.value ? this.getStateFromDate(this.value) : this.getStateFromToday();
+	            var state = this.value ? _Datepicker.getStateFromDate(this.value) : _Datepicker.getStateFromToday();
 	            var data = this.getMonthData(state);
 	            var html = this.render(data);
 	
 	            return this.show(html).then(function () {
 	                var _bindingsCalendar;
 	
-	                _this3.dom.header = _this3.dom.root.querySelector('[data-ref="header"]');
-	                _this3.dom.tbody = _this3.dom.root.querySelector('[data-ref="tbody"]');
+	                var callback = null;
 	
-	                (_bindingsCalendar = _this3.bindingsCalendar).push.apply(_bindingsCalendar, _toConsumableArray(_this3.bindEvents(_eventsCalendar2.default)));
+	                _this4.dom.header = _this4.dom.root.querySelector('[data-ref="header"]');
+	                _this4.dom.tbody = _this4.dom.root.querySelector('[data-ref="tbody"]');
 	
-	                _this3.state = state;
+	                (_bindingsCalendar = _this4.bindingsCalendar).push.apply(_bindingsCalendar, _toConsumableArray(_this4.bindEvents(_eventsCalendar2.default)));
 	
-	                _this3.isOpen = true;
+	                _this4.state = state;
+	
+	                _this4.isOpen = true;
+	
+	                if (typeof (callback = _this4.config.callbacks.onOpen) === 'function') {
+	                    callback();
+	                }
 	            }).catch(function (err) {
 	                return console.error(err);
 	            });
@@ -433,81 +530,27 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }, {
 	        key: 'unbuild',
 	        value: function unbuild() {
-	            var _this4 = this;
+	            var _this5 = this;
 	
 	            return this.hide().then(function () {
-	                if (_this4.dom.root) {
-	                    _this4.dom.root.parentElement.removeChild(_this4.dom.root);
+	                var callback = null;
+	
+	                if (_this5.dom.root) {
+	                    _this5.dom.root.parentElement.removeChild(_this5.dom.root);
 	                }
 	
-	                _this4.unbindEvents(_this4.bindingsCalendar);
+	                _this5.unbindEvents(_this5.bindingsCalendar);
 	
-	                _this4.dom.root = _this4.dom.buttonPrevYear = _this4.dom.buttonNextYear = _this4.dom.buttonPrevMonth = _this4.dom.buttonNextMonth = null;
+	                _this5.dom.root = _this5.dom.buttonPrevYear = _this5.dom.buttonNextYear = _this5.dom.buttonPrevMonth = _this5.dom.buttonNextMonth = null;
 	
-	                _this4.isOpen = false;
+	                _this5.isOpen = false;
+	
+	                if (typeof (callback = _this5.config.callbacks.onClose) === 'function') {
+	                    callback();
+	                }
 	            }).catch(function (err) {
 	                return console.error(err);
 	            });
-	        }
-	
-	        /**
-	         * @private
-	         * @param   {string} inputDate
-	         * @return  {State}
-	         */
-	
-	    }, {
-	        key: 'getStateFromDate',
-	        value: function getStateFromDate(inputDate) {
-	            var state = new _State2.default();
-	            var date = new Date(inputDate);
-	
-	            state.year = date.getFullYear();
-	            state.monthIndex = date.getMonth();
-	            state.selectedYear = state.year;
-	            state.selectedMonth = state.monthIndex;
-	            state.selectedDay = date.getDate();
-	
-	            Object.freeze(state);
-	
-	            return state;
-	        }
-	
-	        /**
-	         * @private
-	         * @return {State}
-	         */
-	
-	    }, {
-	        key: 'getStateFromToday',
-	        value: function getStateFromToday() {
-	            var state = new _State2.default();
-	            var date = new Date();
-	
-	            state.year = date.getFullYear();
-	            state.monthIndex = date.getMonth();
-	
-	            Object.freeze(state);
-	
-	            return state;
-	        }
-	
-	        /**
-	         * @param   {State}   oldState
-	         * @param   {string}  type
-	         * @return  {State}
-	         */
-	
-	    }, {
-	        key: 'getStateFromAction',
-	        value: function getStateFromAction(oldState, type) {
-	            var fn = null;
-	
-	            if (typeof (fn = _Actions2.default[type]) !== 'function') {
-	                throw new Error('Action "' + type + '" not found');
-	            }
-	
-	            return Object.freeze(fn(this.state));
 	        }
 	
 	        /**
@@ -732,29 +775,48 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }, {
 	        key: 'updateView',
 	        value: function updateView(html) {
-	            var _bindingsCalendar2;
+	            var _this6 = this;
 	
-	            var temp = document.createElement('div');
+	            return Promise.resolve().then(function () {
+	                var _bindingsCalendar2;
 	
-	            temp.innerHTML = html;
+	                var temp = document.createElement('div');
 	
-	            this.unbindEvents(this.bindingsCalendar);
+	                temp.innerHTML = html;
 	
-	            this.dom.root.innerHTML = temp.firstChild.innerHTML;
+	                _this6.unbindEvents(_this6.bindingsCalendar);
 	
-	            this.dom.header = this.dom.root.querySelector('[data-ref="header"]');
-	            this.dom.tbody = this.dom.root.querySelector('[data-ref="tbody"]');
+	                _this6.dom.root.innerHTML = temp.firstChild.innerHTML;
 	
-	            (_bindingsCalendar2 = this.bindingsCalendar).push.apply(_bindingsCalendar2, _toConsumableArray(this.bindEvents(_eventsCalendar2.default)));
+	                _this6.dom.header = _this6.dom.root.querySelector('[data-ref="header"]');
+	                _this6.dom.tbody = _this6.dom.root.querySelector('[data-ref="tbody"]');
+	
+	                (_bindingsCalendar2 = _this6.bindingsCalendar).push.apply(_bindingsCalendar2, _toConsumableArray(_this6.bindEvents(_eventsCalendar2.default)));
+	            });
 	        }
+	
+	        /* Static Methods
+	        ---------------------------------------------------------------------- */
+	
+	        /**
+	         * @private
+	         * @static
+	         * @param   {string} inputDate
+	         * @return  {State}
+	         */
+	
+	    }, {
+	        key: 'open',
+	
+	
+	        /* Public Methods
+	        ---------------------------------------------------------------------- */
 	
 	        /**
 	         * @public
 	         * @return {Promise}
 	         */
 	
-	    }, {
-	        key: 'open',
 	        value: function open() {
 	            if (this.isOpen) return Promise.resolve();
 	
@@ -782,31 +844,161 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }, {
 	        key: 'getValue',
 	        value: function getValue() {
-	            return this.value;
+	            var transform = this.config.transform.output;
+	            var value = '';
+	
+	            if (typeof transform === 'function') {
+	                value = transform(this.value);
+	            } else {
+	                value = this.value;
+	            }
+	
+	            if (!value) {
+	                throw new TypeError('[Datepicker] Transform must return a valid string');
+	            }
+	
+	            return value;
 	        }
 	
 	        /**
 	         * @public
-	         * @param {string} value
+	         * @param   {string} value
+	         * @return  {void}
 	         */
 	
 	    }, {
 	        key: 'setValue',
 	        value: function setValue(value) {
+	            var transform = this.config.transform.input;
+	
 	            if (!value || typeof value !== 'string') {
 	                throw new TypeError('[Datepicker] Invalid value');
 	            }
 	
-	            this.value = value;
+	            if (typeof transform !== 'function') {
+	                this.value = value;
+	
+	                return;
+	            }
+	
+	            this.value = transform(value);
+	
+	            if (this.isOpen) {
+	                this.updateState();
+	            }
 	        }
+	
+	        /**
+	         * @public
+	         * @return {void}
+	         */
+	
 	    }, {
 	        key: 'destroy',
 	        value: function destroy() {
 	            var cacheIndex = Datepicker.cache.indexOf(this);
 	
+	            if (this.dom.root) {
+	                this.unbindEvents(this.bindingsCalendar);
+	
+	                this.dom.root.parentElement.removeChild(this.dom.root);
+	            }
+	
 	            this.unbindEvents(this.bindingsInput);
 	
 	            Datepicker.cache.splice(cacheIndex, 1);
+	        }
+	    }], [{
+	        key: 'getStateFromDate',
+	        value: function getStateFromDate(inputDate) {
+	            var state = new _State2.default();
+	            var date = new Date(inputDate);
+	
+	            state.year = date.getFullYear();
+	            state.monthIndex = date.getMonth();
+	            state.selectedYear = state.year;
+	            state.selectedMonth = state.monthIndex;
+	            state.selectedDay = date.getDate();
+	
+	            return Object.freeze(state);
+	        }
+	
+	        /**
+	         * @private
+	         * @static
+	         * @return {State}
+	         */
+	
+	    }, {
+	        key: 'getStateFromToday',
+	        value: function getStateFromToday() {
+	            var state = new _State2.default();
+	            var date = new Date();
+	
+	            state.year = date.getFullYear();
+	            state.monthIndex = date.getMonth();
+	
+	            return Object.freeze(state);
+	        }
+	
+	        /**
+	         * @private
+	         * @static
+	         * @param   {State}   oldState
+	         * @param   {string}  type
+	         * @return  {State}
+	         */
+	
+	    }, {
+	        key: 'getStateFromAction',
+	        value: function getStateFromAction(oldState, type) {
+	            var fn = null;
+	
+	            if (typeof (fn = _Actions2.default[type]) !== 'function') {
+	                throw new Error('Action "' + type + '" not found');
+	            }
+	
+	            return Object.freeze(fn(oldState));
+	        }
+	
+	        /**
+	         * @private
+	         * @static
+	         * @param {Error}   err
+	         * @param {object}  target
+	         */
+	
+	    }, {
+	        key: 'handleConfigureError',
+	        value: function handleConfigureError(err, target) {
+	            var re = /property "?(\w*)"?[,:] object/i;
+	
+	            var matches = null;
+	            var illegalPropName = '';
+	            var bestMatch = '';
+	            var suggestion = '';
+	
+	            if (!(err instanceof TypeError) || !(matches = re.exec(err.message))) throw err;
+	
+	            illegalPropName = matches[1];
+	
+	            for (var key in target) {
+	                var i = 0;
+	
+	                while (i < illegalPropName.length && illegalPropName.charAt(i).toLowerCase() === key.charAt(i).toLowerCase()) {
+	                    i++;
+	                }
+	
+	                if (i > bestMatch.length) {
+	                    bestMatch = key;
+	                }
+	            }
+	
+	            if (bestMatch) {
+	                suggestion = '. Did you mean "' + bestMatch + '"?';
+	            }
+	
+	            throw new TypeError('[Datepicker] Invalid configuration property "' + illegalPropName + '"' + suggestion);
 	        }
 	    }]);
 	
@@ -887,13 +1079,21 @@ return /******/ (function(modules) { // webpackBootstrap
 	    value: true
 	});
 	
-	var _ConfigClassNames = __webpack_require__(4);
+	var _ConfigBehavior = __webpack_require__(18);
 	
-	var _ConfigClassNames2 = _interopRequireDefault(_ConfigClassNames);
+	var _ConfigBehavior2 = _interopRequireDefault(_ConfigBehavior);
 	
 	var _ConfigCallbacks = __webpack_require__(5);
 	
 	var _ConfigCallbacks2 = _interopRequireDefault(_ConfigCallbacks);
+	
+	var _ConfigClassNames = __webpack_require__(4);
+	
+	var _ConfigClassNames2 = _interopRequireDefault(_ConfigClassNames);
+	
+	var _ConfigTransform = __webpack_require__(19);
+	
+	var _ConfigTransform2 = _interopRequireDefault(_ConfigTransform);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -902,10 +1102,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	var Config = function Config() {
 	    _classCallCheck(this, Config);
 	
-	    this.classNames = new _ConfigClassNames2.default();
+	    this.behavior = new _ConfigBehavior2.default();
 	    this.callbacks = new _ConfigCallbacks2.default();
+	    this.classNames = new _ConfigClassNames2.default();
+	    this.transform = new _ConfigTransform2.default();
 	
 	    Object.seal(this);
+	    Object.freeze(this);
 	};
 	
 	exports.default = Config;
@@ -967,6 +1170,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	    _classCallCheck(this, ConfigCallbacks);
 	
 	    this.onSelect = null;
+	    this.onOpen = null;
+	    this.onClose = null;
+	    this.onChangeView = null;
 	
 	    Object.seal(this);
 	};
@@ -1153,23 +1359,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	         * @param   {object}    target
 	         * @param   {object}    source
 	         * @param   {boolean}   [deep=false]
+	         * @param   {function}  [errorHandler=null]
 	         * @return  {object}
 	         */
 	
 	    }, {
 	        key: 'extend',
-	        value: function (_extend) {
-	            function extend(_x, _x2) {
-	                return _extend.apply(this, arguments);
-	            }
-	
-	            extend.toString = function () {
-	                return _extend.toString();
-	            };
-	
-	            return extend;
-	        }(function (target, source) {
+	        value: function extend(target, source) {
 	            var deep = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
+	            var errorHandler = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : null;
 	
 	            var sourceKeys = [];
 	
@@ -1197,7 +1395,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    // All non-object primitives, or all properties if
 	                    // shallow extend
 	
-	                    target[key] = source[key];
+	                    try {
+	                        target[key] = source[key];
+	                    } catch (err) {
+	                        if (typeof errorHandler !== 'function') throw err;
+	
+	                        errorHandler(err, target);
+	                    }
 	                } else if (Array.isArray(source[key])) {
 	                    // Arrays
 	
@@ -1205,7 +1409,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                        target[key] = [];
 	                    }
 	
-	                    extend(target[key], source[key], deep);
+	                    Util.extend(target[key], source[key], deep, errorHandler);
 	                } else {
 	                    // Objects
 	
@@ -1213,12 +1417,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	                        target[key] = {};
 	                    }
 	
-	                    extend(target[key], source[key], deep);
+	                    Util.extend(target[key], source[key], deep, errorHandler);
 	                }
 	            }
 	
 	            return target;
-	        })
+	        }
 	
 	        /**
 	         * Converts a dash or snake-case string to camel case.
@@ -1575,6 +1779,51 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 	
 	exports.default = Week;
+
+/***/ },
+/* 18 */
+/***/ function(module, exports) {
+
+	"use strict";
+	
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	var ConfigBehavior = function ConfigBehavior() {
+	    _classCallCheck(this, ConfigBehavior);
+	
+	    this.closeOnSelect = true;
+	
+	    Object.seal(this);
+	};
+	
+	exports.default = ConfigBehavior;
+
+/***/ },
+/* 19 */
+/***/ function(module, exports) {
+
+	"use strict";
+	
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	var ConfigTransform = function ConfigTransform() {
+	    _classCallCheck(this, ConfigTransform);
+	
+	    this.input = null;
+	    this.output = null;
+	
+	    Object.seal(this);
+	};
+	
+	exports.default = ConfigTransform;
 
 /***/ }
 /******/ ])

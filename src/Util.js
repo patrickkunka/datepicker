@@ -96,10 +96,11 @@ class Util {
      * @param   {object}    target
      * @param   {object}    source
      * @param   {boolean}   [deep=false]
+     * @param   {function}  [errorHandler=null]
      * @return  {object}
      */
 
-    static extend(target, source, deep=false) {
+    static extend(target, source, deep=false, errorHandler=null) {
         let sourceKeys = [];
 
         if (!target || typeof target !== 'object') {
@@ -126,7 +127,13 @@ class Util {
                 // All non-object primitives, or all properties if
                 // shallow extend
 
-                target[key] = source[key];
+                try {
+                    target[key] = source[key];
+                } catch (err) {
+                    if (typeof errorHandler !== 'function') throw err;
+
+                    errorHandler(err, target);
+                }
             } else if (Array.isArray(source[key])) {
                 // Arrays
 
@@ -134,7 +141,7 @@ class Util {
                     target[key] = [];
                 }
 
-                extend(target[key], source[key], deep);
+                Util.extend(target[key], source[key], deep, errorHandler);
             } else {
                 // Objects
 
@@ -142,7 +149,7 @@ class Util {
                     target[key] = {};
                 }
 
-                extend(target[key], source[key], deep);
+                Util.extend(target[key], source[key], deep, errorHandler);
             }
         }
 

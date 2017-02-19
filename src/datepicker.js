@@ -56,14 +56,30 @@ class _Datepicker {
 
         Object.seal(this);
 
+        this.init(input, config);
+    }
+
+    /* Private Methods
+    ---------------------------------------------------------------------- */
+
+    /**
+     * @private
+     * @return {void}
+     */
+
+    init(input, config) {
         if (!(input instanceof HTMLInputElement)) {
-            throw new TypeError('[Datepicker] No valid input element provided');
+            throw new TypeError('[Datepicker] Invalid input element provided');
+        }
+
+        if (!config || typeof config !== 'object') {
+            throw new TypeError('[Datepicker] Invalid configuration object provided');
         }
 
         this.dom.input = input;
 
         this.configure(config);
-
+        this.parseInitialValue();
         this.bindingsInput.push(...this.bindEvents(eventsInput));
     }
 
@@ -74,7 +90,31 @@ class _Datepicker {
      */
 
     configure(config) {
-        Util.extend(this.config, config);
+        Util.extend(this.config, config, true, _Datepicker.handleConfigureError.bind(this));
+    }
+
+    /**
+     * @private
+     * @return {void}
+     */
+
+    parseInitialValue() {
+        let value     = '';
+        let transform = null;
+
+        if (!(value = this.dom.input.value)) return;
+
+        if (typeof (transform = this.config.transform.input) !== 'function') {
+            this.value = value;
+
+            return;
+        }
+
+        this.value = transform(value);
+
+        if (!this.value || typeof this.value !== 'string') {
+            throw new TypeError('[Datepicker] Transform functions must return a valid string');
+        }
     }
 
     /**
@@ -167,10 +207,7 @@ class _Datepicker {
     handleHeaderClick(e) {
         const button = Util.closestParent(e.target, '[data-ref~="button"]', true);
 
-        let action  = '';
-        let html    = '';
-        let state   = null;
-        let data    = null;
+        let action = '';
 
         e.stopPropagation();
 
@@ -178,13 +215,7 @@ class _Datepicker {
 
         action = button.getAttribute('data-action');
 
-        state = this.getStateFromAction(this.state, action);
-        data  = this.getMonthData(state);
-        html  = this.render(data);
-
-        this.updateView(html);
-
-        this.state = state;
+        this.updateState(action);
     }
 
     /**
@@ -194,11 +225,16 @@ class _Datepicker {
 
     handleTbodyClick(e) {
         const cell = Util.closestParent(e.target, '[data-ref="day"]', true);
+        const event = new CustomEvent('change', {
+            bubbles: true,
+            cancelable: true
+        });
 
         let day         = -1;
         let month       = -1;
         let date        = '';
-        let onSelect    = null;
+        let callback    = null;
+        let transform   = null;
 
         e.stopPropagation();
 
@@ -210,13 +246,56 @@ class _Datepicker {
         date = this.state.year + '-' + Util.pad(month) + '-' + Util.pad(day);
 
         this.value = date;
-        this.dom.input.value = this.value;
 
-        if (typeof (onSelect = this.config.callbacks.onSelect) === 'function') {
-            onSelect(this.value);
+        if (typeof (transform = this.config.transform.output) === 'function') {
+            this.dom.input.value = transform(this.value);
+        } else {
+            this.dom.input.value = this.value;
         }
 
-        this.unbuild();
+        if (!this.dom.input.value) {
+            throw new TypeError('[Datepicker] Transform must return a valid string');
+        }
+
+        if (typeof (callback = this.config.callbacks.onSelect) === 'function') {
+            callback(this.value);
+        }
+
+        this.dom.input.dispatchEvent(event);
+
+        if (this.config.behavior.closeOnSelect) {
+            this.unbuild();
+        } else {
+            this.updateState();
+        }
+    }
+
+    /**
+     * @private
+     * @param   {string} [action='']
+     * @return  {Promise}
+     */
+
+    updateState(action='') {
+        const state = action ? _Datepicker.getStateFromAction(this.state, action) : _Datepicker.getStateFromDate(this.value);
+        const data  = this.getMonthData(state);
+        const html  = this.render(data);
+
+        this.state = state;
+
+        return this.updateView(html, action)
+            .then(() => {
+                let callback = null;
+
+                if (action) {
+                    callback = this.config.callbacks.onChangeView;
+                }
+
+                if (typeof callback === 'function') {
+                    callback();
+                }
+            })
+            .catch(err => console.error(err));
     }
 
     /**
@@ -225,12 +304,14 @@ class _Datepicker {
      */
 
     build() {
-        const state = this.value ? this.getStateFromDate(this.value) : this.getStateFromToday();
+        const state = this.value ? _Datepicker.getStateFromDate(this.value) : _Datepicker.getStateFromToday();
         const data  = this.getMonthData(state);
         const html  = this.render(data);
 
         return this.show(html)
             .then(() => {
+                let callback = null;
+
                 this.dom.header = this.dom.root.querySelector('[data-ref="header"]');
                 this.dom.tbody  = this.dom.root.querySelector('[data-ref="tbody"]');
 
@@ -239,6 +320,10 @@ class _Datepicker {
                 this.state = state;
 
                 this.isOpen = true;
+
+                if (typeof (callback = this.config.callbacks.onOpen) === 'function') {
+                    callback();
+                }
             })
             .catch(err => console.error(err));
     }
@@ -251,6 +336,8 @@ class _Datepicker {
     unbuild() {
         return this.hide()
             .then(() => {
+                let callback = null;
+
                 if (this.dom.root) {
                     this.dom.root.parentElement.removeChild(this.dom.root);
                 }
@@ -264,62 +351,12 @@ class _Datepicker {
                     this.dom.buttonNextMonth = null;
 
                 this.isOpen = false;
+
+                if (typeof (callback = this.config.callbacks.onClose) === 'function') {
+                    callback();
+                }
             })
             .catch(err => console.error(err));
-    }
-
-    /**
-     * @private
-     * @param   {string} inputDate
-     * @return  {State}
-     */
-
-    getStateFromDate(inputDate) {
-        const state = new State();
-        const date  = new Date(inputDate);
-
-        state.year          = date.getFullYear();
-        state.monthIndex    = date.getMonth();
-        state.selectedYear  = state.year;
-        state.selectedMonth = state.monthIndex;
-        state.selectedDay   = date.getDate();
-
-        Object.freeze(state);
-
-        return state;
-    }
-
-    /**
-     * @private
-     * @return {State}
-     */
-
-    getStateFromToday() {
-        const state = new State();
-        const date  = new Date();
-
-        state.year       = date.getFullYear();
-        state.monthIndex = date.getMonth();
-
-        Object.freeze(state);
-
-        return state;
-    }
-
-    /**
-     * @param   {State}   oldState
-     * @param   {string}  type
-     * @return  {State}
-     */
-
-    getStateFromAction(oldState, type) {
-        let fn = null;
-
-        if (typeof (fn = Actions[type]) !== 'function') {
-            throw new Error(`Action "${type}" not found`);
-        }
-
-        return Object.freeze(fn(this.state));
     }
 
     /**
@@ -544,19 +581,120 @@ class _Datepicker {
      */
 
     updateView(html) {
-        const temp = document.createElement('div');
+        return Promise.resolve()
+            .then(() => {
+                const temp = document.createElement('div');
 
-        temp.innerHTML = html;
+                temp.innerHTML = html;
 
-        this.unbindEvents(this.bindingsCalendar);
+                this.unbindEvents(this.bindingsCalendar);
 
-        this.dom.root.innerHTML = temp.firstChild.innerHTML;
+                this.dom.root.innerHTML = temp.firstChild.innerHTML;
 
-        this.dom.header = this.dom.root.querySelector('[data-ref="header"]');
-        this.dom.tbody  = this.dom.root.querySelector('[data-ref="tbody"]');
+                this.dom.header = this.dom.root.querySelector('[data-ref="header"]');
+                this.dom.tbody  = this.dom.root.querySelector('[data-ref="tbody"]');
 
-        this.bindingsCalendar.push(...this.bindEvents(eventsCalendar));
+                this.bindingsCalendar.push(...this.bindEvents(eventsCalendar));
+            });
     }
+
+    /* Static Methods
+    ---------------------------------------------------------------------- */
+
+    /**
+     * @private
+     * @static
+     * @param   {string} inputDate
+     * @return  {State}
+     */
+
+    static getStateFromDate(inputDate) {
+        const state = new State();
+        const date  = new Date(inputDate);
+
+        state.year          = date.getFullYear();
+        state.monthIndex    = date.getMonth();
+        state.selectedYear  = state.year;
+        state.selectedMonth = state.monthIndex;
+        state.selectedDay   = date.getDate();
+
+        return Object.freeze(state);
+    }
+
+    /**
+     * @private
+     * @static
+     * @return {State}
+     */
+
+    static getStateFromToday() {
+        const state = new State();
+        const date  = new Date();
+
+        state.year       = date.getFullYear();
+        state.monthIndex = date.getMonth();
+
+        return Object.freeze(state);
+    }
+
+    /**
+     * @private
+     * @static
+     * @param   {State}   oldState
+     * @param   {string}  type
+     * @return  {State}
+     */
+
+    static getStateFromAction(oldState, type) {
+        let fn = null;
+
+        if (typeof (fn = Actions[type]) !== 'function') {
+            throw new Error(`Action "${type}" not found`);
+        }
+
+        return Object.freeze(fn(oldState));
+    }
+
+    /**
+     * @private
+     * @static
+     * @param {Error}   err
+     * @param {object}  target
+     */
+
+    static handleConfigureError(err, target) {
+        const re = /property "?(\w*)"?[,:] object/i;
+
+        let matches         = null;
+        let illegalPropName = '';
+        let bestMatch       = '';
+        let suggestion      = '';
+
+        if (!(err instanceof TypeError) || !(matches = re.exec(err.message))) throw err;
+
+        illegalPropName = matches[1];
+
+        for (let key in target) {
+            let i = 0;
+
+            while (i < illegalPropName.length && illegalPropName.charAt(i).toLowerCase() === key.charAt(i).toLowerCase()) {
+                i++;
+            }
+
+            if (i > bestMatch.length) {
+                bestMatch = key;
+            }
+        }
+
+        if (bestMatch) {
+            suggestion = `. Did you mean "${bestMatch}"?`;
+        }
+
+        throw new TypeError(`[Datepicker] Invalid configuration property "${illegalPropName}"${suggestion}`);
+    }
+
+    /* Public Methods
+    ---------------------------------------------------------------------- */
 
     /**
      * @public
@@ -586,24 +724,61 @@ class _Datepicker {
      */
 
     getValue() {
-        return this.value;
+        let transform = this.config.transform.output;
+        let value = '';
+
+        if (typeof transform === 'function') {
+            value = transform(this.value);
+        } else {
+            value = this.value;
+        }
+
+        if (!value) {
+            throw new TypeError('[Datepicker] Transform must return a valid string');
+        }
+
+        return value;
     }
 
     /**
      * @public
-     * @param {string} value
+     * @param   {string} value
+     * @return  {void}
      */
 
     setValue(value) {
+        let transform = this.config.transform.input;
+
         if (!value || typeof value !== 'string') {
             throw new TypeError('[Datepicker] Invalid value');
         }
 
-        this.value = value;
+        if (typeof transform !== 'function') {
+            this.value = value;
+
+            return;
+        }
+
+        this.value = transform(value);
+
+        if (this.isOpen) {
+            this.updateState();
+        }
     }
+
+    /**
+     * @public
+     * @return {void}
+     */
 
     destroy() {
         const cacheIndex = Datepicker.cache.indexOf(this);
+
+        if (this.dom.root) {
+            this.unbindEvents(this.bindingsCalendar);
+
+            this.dom.root.parentElement.removeChild(this.dom.root);
+        }
 
         this.unbindEvents(this.bindingsInput);
 
