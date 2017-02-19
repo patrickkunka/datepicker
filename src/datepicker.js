@@ -125,8 +125,6 @@ class _Datepicker {
      */
 
     unbindEvents(eventBindings) {
-        console.log('unbinding', eventBindings);
-
         while (eventBindings.length) {
             const binding = eventBindings.pop();
 

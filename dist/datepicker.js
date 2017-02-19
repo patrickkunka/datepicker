@@ -289,8 +289,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }, {
 	        key: 'unbindEvents',
 	        value: function unbindEvents(eventBindings) {
-	            console.log('unbinding', eventBindings);
-	
 	            while (eventBindings.length) {
 	                var binding = eventBindings.pop();
 	
