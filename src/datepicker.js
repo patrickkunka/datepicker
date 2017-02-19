@@ -564,15 +564,36 @@ class _Datepicker {
      */
 
     show(html) {
-        const temp = document.createElement('div');
+        return Promise.resolve()
+            .then(() => {
+                const temp = document.createElement('div');
 
-        temp.innerHTML = html;
+                temp.innerHTML = html;
 
-        this.dom.root = temp.firstElementChild;
+                this.dom.root = temp.firstElementChild;
 
-        this.dom.input.parentElement.insertBefore(this.dom.root, this.dom.input.nextElementSibling);
+                this.dom.root.style.opacity = '0';
 
-        return Promise.resolve();
+                this.dom.input.parentElement.insertBefore(this.dom.root, this.dom.input.nextElementSibling);
+
+                this.dom.root.style.transition = `opacity ${this.config.animation.duration}ms`;
+
+                return new Promise(resolve => {
+                    this.dom.root.addEventListener('transitionend', function handler(e) {
+                        if (e.propertyName !== 'opacity') return;
+
+                        resolve();
+
+                        parent.removeEventListener('transitionend', handler);
+                    });
+
+                    setTimeout(() => (this.dom.root.style.opacity = '1'));
+                });
+            })
+            .then(() => {
+                this.dom.root.style.transition = '';
+                this.dom.root.style.opacity = '';
+            });
     }
 
     /**

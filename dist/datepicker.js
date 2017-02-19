@@ -111,51 +111,51 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	var _Config2 = _interopRequireDefault(_Config);
 	
-	var _Dom = __webpack_require__(8);
+	var _Dom = __webpack_require__(9);
 	
 	var _Dom2 = _interopRequireDefault(_Dom);
 	
-	var _EventBinding = __webpack_require__(9);
+	var _EventBinding = __webpack_require__(10);
 	
 	var _EventBinding2 = _interopRequireDefault(_EventBinding);
 	
-	var _Util = __webpack_require__(10);
+	var _Util = __webpack_require__(11);
 	
 	var _Util2 = _interopRequireDefault(_Util);
 	
-	var _eventsInput = __webpack_require__(11);
+	var _eventsInput = __webpack_require__(12);
 	
 	var _eventsInput2 = _interopRequireDefault(_eventsInput);
 	
-	var _eventsCalendar = __webpack_require__(12);
+	var _eventsCalendar = __webpack_require__(13);
 	
 	var _eventsCalendar2 = _interopRequireDefault(_eventsCalendar);
 	
-	var _Templates = __webpack_require__(13);
+	var _Templates = __webpack_require__(14);
 	
 	var _Templates2 = _interopRequireDefault(_Templates);
 	
-	var _Actions = __webpack_require__(14);
+	var _Actions = __webpack_require__(15);
 	
 	var _Actions2 = _interopRequireDefault(_Actions);
 	
-	var _CssTranslates = __webpack_require__(23);
+	var _CssTranslates = __webpack_require__(16);
 	
 	var _CssTranslates2 = _interopRequireDefault(_CssTranslates);
 	
-	var _Month = __webpack_require__(15);
+	var _Month = __webpack_require__(18);
 	
 	var _Month2 = _interopRequireDefault(_Month);
 	
-	var _Day = __webpack_require__(17);
+	var _Day = __webpack_require__(20);
 	
 	var _Day2 = _interopRequireDefault(_Day);
 	
-	var _DayMarker = __webpack_require__(18);
+	var _DayMarker = __webpack_require__(21);
 	
 	var _DayMarker2 = _interopRequireDefault(_DayMarker);
 	
-	var _Week = __webpack_require__(19);
+	var _Week = __webpack_require__(22);
 	
 	var _Week2 = _interopRequireDefault(_Week);
 	
@@ -759,15 +759,38 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }, {
 	        key: 'show',
 	        value: function show(html) {
-	            var temp = document.createElement('div');
+	            var _this6 = this;
 	
-	            temp.innerHTML = html;
+	            return Promise.resolve().then(function () {
+	                var temp = document.createElement('div');
 	
-	            this.dom.root = temp.firstElementChild;
+	                temp.innerHTML = html;
 	
-	            this.dom.input.parentElement.insertBefore(this.dom.root, this.dom.input.nextElementSibling);
+	                _this6.dom.root = temp.firstElementChild;
 	
-	            return Promise.resolve();
+	                _this6.dom.root.style.opacity = '0';
+	
+	                _this6.dom.input.parentElement.insertBefore(_this6.dom.root, _this6.dom.input.nextElementSibling);
+	
+	                _this6.dom.root.style.transition = 'opacity ' + _this6.config.animation.duration + 'ms';
+	
+	                return new Promise(function (resolve) {
+	                    _this6.dom.root.addEventListener('transitionend', function handler(e) {
+	                        if (e.propertyName !== 'opacity') return;
+	
+	                        resolve();
+	
+	                        parent.removeEventListener('transitionend', handler);
+	                    });
+	
+	                    setTimeout(function () {
+	                        return _this6.dom.root.style.opacity = '1';
+	                    });
+	                });
+	            }).then(function () {
+	                _this6.dom.root.style.transition = '';
+	                _this6.dom.root.style.opacity = '';
+	            });
 	        }
 	
 	        /**
@@ -795,7 +818,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }, {
 	        key: 'updateView',
 	        value: function updateView(html, action) {
-	            var _this6 = this;
+	            var _this7 = this;
 	
 	            return Promise.resolve().then(function () {
 	                var temp = document.createElement('div');
@@ -805,25 +828,25 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	                temp.innerHTML = html;
 	
-	                _this6.unbindEvents(_this6.bindingsCalendar);
+	                _this7.unbindEvents(_this7.bindingsCalendar);
 	
 	                if (action) {
 	                    newHeader = temp.querySelector('[data-ref="header"]');
 	                    newMonth = temp.querySelector('[data-ref="month"]');
 	
-	                    _this6.dom.root.replaceChild(newHeader, _this6.dom.header);
-	                    _this6.dom.calendar.appendChild(newMonth, _this6.dom.month);
+	                    _this7.dom.root.replaceChild(newHeader, _this7.dom.header);
+	                    _this7.dom.calendar.appendChild(newMonth, _this7.dom.month);
 	
-	                    return _this6.animateMonthTransition(_this6.dom.calendar.lastElementChild, _this6.dom.month, action);
+	                    return _this7.animateMonthTransition(_this7.dom.calendar.lastElementChild, _this7.dom.month, action);
 	                }
 	
-	                _this6.dom.root.innerHTML = temp.firstChild.innerHTML;
+	                _this7.dom.root.innerHTML = temp.firstChild.innerHTML;
 	            }).then(function () {
 	                var _bindingsCalendar2;
 	
-	                _this6.cacheCalendarDom();
+	                _this7.cacheCalendarDom();
 	
-	                (_bindingsCalendar2 = _this6.bindingsCalendar).push.apply(_bindingsCalendar2, _toConsumableArray(_this6.bindEvents(_eventsCalendar2.default)));
+	                (_bindingsCalendar2 = _this7.bindingsCalendar).push.apply(_bindingsCalendar2, _toConsumableArray(_this7.bindEvents(_eventsCalendar2.default)));
 	            });
 	        }
 	
@@ -838,16 +861,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }, {
 	        key: 'animateMonthTransition',
 	        value: function animateMonthTransition(newMonth, oldMonth, action) {
-	            var _this7 = this;
+	            var _this8 = this;
 	
 	            var parent = oldMonth.parentElement;
 	
 	            return new Promise(function (resolve) {
-	                var duration = _this7.config.animation.duration;
-	                var easing = _this7.config.animation.easing;
+	                var duration = _this8.config.animation.duration;
+	                var easing = _this8.config.animation.easing;
 	                var translate = _CssTranslates2.default[action];
 	
-	                _this7.isTransitioning = true;
+	                _this8.isTransitioning = true;
 	
 	                parent.addEventListener('transitionend', function handler(e) {
 	                    if (e.propertyName !== 'transform' || !e.target.matches('[data-ref="month"]')) return;
@@ -872,7 +895,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                newMonth.style.transition = '';
 	                newMonth.style.transform = '';
 	
-	                _this7.isTransitioning = false;
+	                _this8.isTransitioning = false;
 	            });
 	        }
 	
@@ -1160,23 +1183,23 @@ return /******/ (function(modules) { // webpackBootstrap
 	    value: true
 	});
 	
-	var _ConfigAnimation = __webpack_require__(20);
+	var _ConfigAnimation = __webpack_require__(4);
 	
 	var _ConfigAnimation2 = _interopRequireDefault(_ConfigAnimation);
 	
-	var _ConfigBehavior = __webpack_require__(4);
+	var _ConfigBehavior = __webpack_require__(5);
 	
 	var _ConfigBehavior2 = _interopRequireDefault(_ConfigBehavior);
 	
-	var _ConfigCallbacks = __webpack_require__(5);
+	var _ConfigCallbacks = __webpack_require__(6);
 	
 	var _ConfigCallbacks2 = _interopRequireDefault(_ConfigCallbacks);
 	
-	var _ConfigClassNames = __webpack_require__(6);
+	var _ConfigClassNames = __webpack_require__(7);
 	
 	var _ConfigClassNames2 = _interopRequireDefault(_ConfigClassNames);
 	
-	var _ConfigTransform = __webpack_require__(7);
+	var _ConfigTransform = __webpack_require__(8);
 	
 	var _ConfigTransform2 = _interopRequireDefault(_ConfigTransform);
 	
@@ -1203,6 +1226,29 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 4 */
 /***/ function(module, exports) {
 
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	var ConfigAnimation = function ConfigAnimation() {
+	    _classCallCheck(this, ConfigAnimation);
+	
+	    this.duration = 200;
+	    this.easing = 'cubic-bezier(0.86, 0, 0.07, 1)';
+	
+	    Object.seal(this);
+	};
+	
+	exports.default = ConfigAnimation;
+
+/***/ },
+/* 5 */
+/***/ function(module, exports) {
+
 	"use strict";
 	
 	Object.defineProperty(exports, "__esModule", {
@@ -1222,7 +1268,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.default = ConfigBehavior;
 
 /***/ },
-/* 5 */
+/* 6 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -1247,7 +1293,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.default = ConfigCallbacks;
 
 /***/ },
-/* 6 */
+/* 7 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -1289,7 +1335,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.default = ConfigClassNames;
 
 /***/ },
-/* 7 */
+/* 8 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -1312,7 +1358,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.default = ConfigTransform;
 
 /***/ },
-/* 8 */
+/* 9 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -1343,7 +1389,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.default = Dom;
 
 /***/ },
-/* 9 */
+/* 10 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -1369,7 +1415,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.default = EventBinding;
 
 /***/ },
-/* 10 */
+/* 11 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -1627,7 +1673,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.default = Object.freeze(Util);
 
 /***/ },
-/* 11 */
+/* 12 */
 /***/ function(module, exports) {
 
 	module.exports = [
@@ -1639,7 +1685,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	];
 
 /***/ },
-/* 12 */
+/* 13 */
 /***/ function(module, exports) {
 
 	module.exports = [
@@ -1660,7 +1706,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	];
 
 /***/ },
-/* 13 */
+/* 14 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1669,7 +1715,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    value: true
 	});
 	
-	var _Util = __webpack_require__(10);
+	var _Util = __webpack_require__(11);
 	
 	var _Util2 = _interopRequireDefault(_Util);
 	
@@ -1686,7 +1732,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.default = Object.freeze(Templates);
 
 /***/ },
-/* 14 */
+/* 15 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1699,7 +1745,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	var _State2 = _interopRequireDefault(_State);
 	
-	var _Util = __webpack_require__(10);
+	var _Util = __webpack_require__(11);
 	
 	var _Util2 = _interopRequireDefault(_Util);
 	
@@ -1753,7 +1799,61 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.default = Object.freeze(Actions);
 
 /***/ },
-/* 15 */
+/* 16 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	
+	var _CssTranslate = __webpack_require__(17);
+	
+	var _CssTranslate2 = _interopRequireDefault(_CssTranslate);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	var Transforms = {}; /* eslint-disable no-magic-numbers */
+	
+	Transforms.GO_TO_NEXT_MONTH = new _CssTranslate2.default([0, 0], [0, 0], [-100, 0], [-100, 0]);
+	Transforms.GO_TO_PREV_MONTH = new _CssTranslate2.default([0, 0], [-200, 0], [100, 0], [-100, 0]);
+	Transforms.GO_TO_NEXT_YEAR = new _CssTranslate2.default([0, 0], [-100, 100], [0, -100], [-100, 0]);
+	Transforms.GO_TO_PREV_YEAR = new _CssTranslate2.default([0, 0], [-100, -100], [0, 100], [-100, 0]);
+	
+	exports.default = Object.freeze(Transforms);
+
+/***/ },
+/* 17 */
+/***/ function(module, exports) {
+
+	"use strict";
+	
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	var CssTranslate = function CssTranslate(oldCoordsBefore, newCoordsBefore, oldCoordsAfter, newCoordsAfter) {
+	    _classCallCheck(this, CssTranslate);
+	
+	    this.newXBefore = newCoordsBefore[0];
+	    this.newYBefore = newCoordsBefore[1];
+	    this.oldXBefore = oldCoordsBefore[0];
+	    this.oldYBefore = oldCoordsBefore[1];
+	    this.newXAfter = newCoordsAfter[0];
+	    this.newYAfter = newCoordsAfter[1];
+	    this.oldXAfter = oldCoordsAfter[0];
+	    this.oldYAfter = oldCoordsAfter[1];
+	
+	    Object.seal(this);
+	};
+	
+	exports.default = CssTranslate;
+
+/***/ },
+/* 18 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1764,7 +1864,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
-	var _constantsEn = __webpack_require__(16);
+	var _constantsEn = __webpack_require__(19);
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
@@ -1805,7 +1905,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.default = Month;
 
 /***/ },
-/* 16 */
+/* 19 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -1821,7 +1921,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	Object.freeze(DAYS);
 
 /***/ },
-/* 17 */
+/* 20 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -1849,7 +1949,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.default = Day;
 
 /***/ },
-/* 18 */
+/* 21 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1860,7 +1960,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
-	var _constantsEn = __webpack_require__(16);
+	var _constantsEn = __webpack_require__(19);
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
@@ -1892,7 +1992,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.default = DayMarker;
 
 /***/ },
-/* 19 */
+/* 22 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -1914,85 +2014,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 	
 	exports.default = Week;
-
-/***/ },
-/* 20 */
-/***/ function(module, exports) {
-
-	'use strict';
-	
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-	
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-	
-	var ConfigAnimation = function ConfigAnimation() {
-	    _classCallCheck(this, ConfigAnimation);
-	
-	    this.duration = 200;
-	    this.easing = 'cubic-bezier(0.86, 0, 0.07, 1)';
-	
-	    Object.seal(this);
-	};
-	
-	exports.default = ConfigAnimation;
-
-/***/ },
-/* 21 */,
-/* 22 */,
-/* 23 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	
-	var _CssTranslate = __webpack_require__(24);
-	
-	var _CssTranslate2 = _interopRequireDefault(_CssTranslate);
-	
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-	
-	var Transforms = {}; /* eslint-disable no-magic-numbers */
-	
-	Transforms.GO_TO_NEXT_MONTH = new _CssTranslate2.default([0, 0], [0, 0], [-100, 0], [-100, 0]);
-	Transforms.GO_TO_PREV_MONTH = new _CssTranslate2.default([0, 0], [-200, 0], [100, 0], [-100, 0]);
-	Transforms.GO_TO_NEXT_YEAR = new _CssTranslate2.default([0, 0], [-100, 100], [0, -100], [-100, 0]);
-	Transforms.GO_TO_PREV_YEAR = new _CssTranslate2.default([0, 0], [-100, -100], [0, 100], [-100, 0]);
-	
-	exports.default = Object.freeze(Transforms);
-
-/***/ },
-/* 24 */
-/***/ function(module, exports) {
-
-	"use strict";
-	
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-	
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-	
-	var CssTranslate = function CssTranslate(oldCoordsBefore, newCoordsBefore, oldCoordsAfter, newCoordsAfter) {
-	    _classCallCheck(this, CssTranslate);
-	
-	    this.newXBefore = newCoordsBefore[0];
-	    this.newYBefore = newCoordsBefore[1];
-	    this.oldXBefore = oldCoordsBefore[0];
-	    this.oldYBefore = oldCoordsBefore[1];
-	    this.newXAfter = newCoordsAfter[0];
-	    this.newYAfter = newCoordsAfter[1];
-	    this.oldXAfter = oldCoordsAfter[0];
-	    this.oldYAfter = oldCoordsAfter[1];
-	
-	    Object.seal(this);
-	};
-	
-	exports.default = CssTranslate;
 
 /***/ }
 /******/ ])
