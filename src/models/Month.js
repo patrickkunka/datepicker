@@ -8,6 +8,7 @@ class Month {
         this.year                       = -1;
         this.weeksHtml                  = '';
         this.legendHtml                 = '';
+        this.calendarClassName          = '';
         this.monthClassName             = '';
         this.headerClassName            = '';
         this.headingClassName           = '';

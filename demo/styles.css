@@ -22,7 +22,13 @@
     vertical-align: baseline;
 }
 
+.datepicker_calendar {
+    overflow: hidden;
+    white-space: nowrap;
+}
+
 .datepicker_month {
+    display: inline-table;
     width: 100%;
     border-collapse: collapse;
     border-spacing: 0;

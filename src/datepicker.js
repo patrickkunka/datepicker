@@ -7,6 +7,7 @@ import eventsInput      from './eventsInput.json';
 import eventsCalendar   from './eventsCalendar.json';
 import Templates        from './Templates';
 import Actions          from './Actions';
+import CssTranslates    from './CssTranslates';
 
 import Month            from './models/Month';
 import Day              from './models/Day';
@@ -51,6 +52,7 @@ class _Datepicker {
         this.config             = new Config();
         this.isOpen             = false;
         this.isFocussing        = false;
+        this.isTransitioning    = false;
         this.bindingsInput      = [];
         this.bindingsCalendar   = [];
 
@@ -211,7 +213,7 @@ class _Datepicker {
 
         e.stopPropagation();
 
-        if (!button) return;
+        if (!button || this.isTransitioning) return;
 
         action = button.getAttribute('data-action');
 
@@ -312,8 +314,7 @@ class _Datepicker {
             .then(() => {
                 let callback = null;
 
-                this.dom.header = this.dom.root.querySelector('[data-ref="header"]');
-                this.dom.tbody  = this.dom.root.querySelector('[data-ref="tbody"]');
+                this.cacheCalendarDom();
 
                 this.bindingsCalendar.push(...this.bindEvents(eventsCalendar));
 
@@ -326,6 +327,18 @@ class _Datepicker {
                 }
             })
             .catch(err => console.error(err));
+    }
+
+    /**
+     * @private
+     * @return {void}
+     */
+
+    cacheCalendarDom() {
+        this.dom.header   = this.dom.root.querySelector('[data-ref="header"]');
+        this.dom.calendar = this.dom.root.querySelector('[data-ref="calendar"]');
+        this.dom.month    = this.dom.root.querySelector('[data-ref="month"]');
+        this.dom.tbody    = this.dom.root.querySelector('[data-ref="tbody"]');
     }
 
     /**
@@ -372,6 +385,7 @@ class _Datepicker {
         let currentDayNumber = state.previousTotalDays - (state.startDayIndex - 1);
         let zone = 'PREV';
 
+        month.calendarClassName     = this.getClassName('calendar');
         month.monthClassName        = this.getClassName('month');
         month.headerClassName       = this.getClassName('header');
         month.headingClassName      = this.getClassName('heading');
@@ -576,25 +590,85 @@ class _Datepicker {
 
     /**
      * @private
-     * @param {string} html
-     * @return {void}
+     * @param   {string} html
+     * @param   {string} action
+     * @return  {void}
      */
 
-    updateView(html) {
+    updateView(html, action) {
         return Promise.resolve()
             .then(() => {
                 const temp = document.createElement('div');
+
+                let newHeader = null;
+                let newMonth  = null;
 
                 temp.innerHTML = html;
 
                 this.unbindEvents(this.bindingsCalendar);
 
-                this.dom.root.innerHTML = temp.firstChild.innerHTML;
+                if (action) {
+                    newHeader = temp.querySelector('[data-ref="header"]');
+                    newMonth  = temp.querySelector('[data-ref="month"]');
 
-                this.dom.header = this.dom.root.querySelector('[data-ref="header"]');
-                this.dom.tbody  = this.dom.root.querySelector('[data-ref="tbody"]');
+                    this.dom.root.replaceChild(newHeader, this.dom.header);
+                    this.dom.calendar.appendChild(newMonth, this.dom.month);
+
+                    return this.animateMonthTransition(this.dom.calendar.lastElementChild, this.dom.month, action);
+                }
+
+                this.dom.root.innerHTML = temp.firstChild.innerHTML;
+            })
+            .then(() => {
+                this.cacheCalendarDom();
 
                 this.bindingsCalendar.push(...this.bindEvents(eventsCalendar));
+            });
+    }
+
+    /**
+     * @private
+     * @param   {HTMLElement} newMonth
+     * @param   {HTMLElement} oldMonth
+     * @param   {string}      action
+     * @return  {Promise}
+     */
+
+    animateMonthTransition(newMonth, oldMonth, action) {
+        const parent = oldMonth.parentElement;
+
+        return new Promise(resolve => {
+            const duration  = this.config.animation.duration;
+            const easing    = this.config.animation.easing;
+            const translate = CssTranslates[action];
+
+            this.isTransitioning = true;
+
+            parent.addEventListener('transitionend', function handler(e) {
+                if (e.propertyName !== 'transform' || !e.target.matches('[data-ref="month"]')) return;
+
+                resolve();
+
+                parent.removeEventListener('transitionend', handler);
+            });
+
+            oldMonth.style.transform = `translate(${translate.oldXBefore}%, ${translate.oldYBefore}%)`;
+            newMonth.style.transform = `translate(${translate.newXBefore}%, ${translate.newYBefore}%)`;
+
+            setTimeout(() => {
+                oldMonth.style.transition = newMonth.style.transition = `transform ${duration}ms${easing ? ' ' + easing : ''}`;
+
+                oldMonth.style.transform = `translate(${translate.oldXAfter}%, ${translate.oldYAfter}%)`;
+                newMonth.style.transform = `translate(${translate.newXAfter}%, ${translate.newYAfter}%)`;
+            });
+        })
+            .then(() => {
+                parent.removeChild(oldMonth);
+
+                newMonth.style.transition = '';
+                newMonth.style.transform = '';
+
+                this.isTransitioning = false;
             });
     }
 

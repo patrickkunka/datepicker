@@ -21,11 +21,14 @@ Templates.container = Util.template(
                 '<button class="${buttonNextYearClassName}" type="button" data-ref="button" data-action="GO_TO_NEXT_YEAR"></button>' +
             '</span>' +
         '</header>' +
-        '<table class="${monthClassName}">' +
-            '<thead>' +
-                '<tr>${legendHtml}</tr>' +
-            '</thead>' +
-        '<tbody data-ref="tbody">${weeksHtml}</tbody></table>' +
+        '<div class="${calendarClassName}" data-ref="calendar">' +
+            '<table class="${monthClassName}" data-ref="month">' +
+                '<thead>' +
+                    '<tr>${legendHtml}</tr>' +
+                '</thead>' +
+                '<tbody data-ref="tbody">${weeksHtml}</tbody>' +
+            '</table>' +
+        '</div>' +
     '</div>'
 );
 

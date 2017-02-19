@@ -1,6 +1,7 @@
 class ConfigClassNames {
     constructor() {
         this.block              = 'datepicker';
+        this.elementCalendar    = 'calendar';
         this.elementDay         = 'day';
         this.elementWeek        = 'week';
         this.elementMonth       = 'month';
