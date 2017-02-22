@@ -261,7 +261,7 @@ class _Datepicker {
             callback(this.value);
         }
 
-        toEmit.map(e => this.dom.input.dispatchEvent(e));
+        toEmit.forEach(e => this.dom.input.dispatchEvent(e));
 
         if (this.config.behavior.closeOnSelect) {
             this.unbuild();

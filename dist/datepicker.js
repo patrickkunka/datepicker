@@ -448,7 +448,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                callback(this.value);
 	            }
 	
-	            toEmit.map(function (e) {
+	            toEmit.forEach(function (e) {
 	                return _this3.dom.input.dispatchEvent(e);
 	            });
 	
