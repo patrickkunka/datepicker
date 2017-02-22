@@ -412,9 +412,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	        key: 'handleTbodyClick',
 	        value: function handleTbodyClick(e) {
 	            var cell = _Util2.default.closestParent(e.target, '[data-ref="day"]', true);
-	            var event = new CustomEvent('change', {
-	                bubbles: true,
-	                cancelable: true
+	            var event = new Event('change', {
+	                bubbles: true
 	            });
 	
 	            var day = -1;

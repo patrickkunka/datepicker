@@ -15,7 +15,9 @@
 
             var picker = datepicker(input);
 
-            console.log(picker);
+            input.addEventListener('change', () => {
+                console.log('change', input.value);
+            });
         </script>
     </body>
 </html>
