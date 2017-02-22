@@ -226,10 +226,9 @@ class _Datepicker {
      */
 
     handleTbodyClick(e) {
-        const cell = Util.closestParent(e.target, '[data-ref="day"]', true);
-        const event = new Event('change', {
-            bubbles: true
-        });
+        const cell        = Util.closestParent(e.target, '[data-ref="day"]', true);
+        const eventConfig = {bubbles: true};
+        const toEmit      = [new Event('input', eventConfig), new Event('change', eventConfig)];
 
         let day         = -1;
         let month       = -1;
@@ -262,7 +261,7 @@ class _Datepicker {
             callback(this.value);
         }
 
-        this.dom.input.dispatchEvent(event);
+        toEmit.map(e => this.dom.input.dispatchEvent(e));
 
         if (this.config.behavior.closeOnSelect) {
             this.unbuild();

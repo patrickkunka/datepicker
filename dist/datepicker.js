@@ -411,10 +411,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }, {
 	        key: 'handleTbodyClick',
 	        value: function handleTbodyClick(e) {
+	            var _this3 = this;
+	
 	            var cell = _Util2.default.closestParent(e.target, '[data-ref="day"]', true);
-	            var event = new Event('change', {
-	                bubbles: true
-	            });
+	            var eventConfig = { bubbles: true };
+	            var toEmit = [new Event('input', eventConfig), new Event('change', eventConfig)];
 	
 	            var day = -1;
 	            var month = -1;
@@ -447,7 +448,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	                callback(this.value);
 	            }
 	
-	            this.dom.input.dispatchEvent(event);
+	            toEmit.map(function (e) {
+	                return _this3.dom.input.dispatchEvent(e);
+	            });
 	
 	            if (this.config.behavior.closeOnSelect) {
 	                this.unbuild();
@@ -465,7 +468,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }, {
 	        key: 'updateState',
 	        value: function updateState() {
-	            var _this3 = this;
+	            var _this4 = this;
 	
 	            var action = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
 	
@@ -479,7 +482,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                var callback = null;
 	
 	                if (action) {
-	                    callback = _this3.config.callbacks.onChangeView;
+	                    callback = _this4.config.callbacks.onChangeView;
 	                }
 	
 	                if (typeof callback === 'function') {
@@ -498,7 +501,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }, {
 	        key: 'build',
 	        value: function build() {
-	            var _this4 = this;
+	            var _this5 = this;
 	
 	            var state = this.value ? _Datepicker.getStateFromDate(this.value) : _Datepicker.getStateFromToday();
 	            var data = this.getMonthData(state);
@@ -509,15 +512,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	                var callback = null;
 	
-	                _this4.cacheCalendarDom();
+	                _this5.cacheCalendarDom();
 	
-	                (_bindingsCalendar = _this4.bindingsCalendar).push.apply(_bindingsCalendar, _toConsumableArray(_this4.bindEvents(_eventsCalendar2.default)));
+	                (_bindingsCalendar = _this5.bindingsCalendar).push.apply(_bindingsCalendar, _toConsumableArray(_this5.bindEvents(_eventsCalendar2.default)));
 	
-	                _this4.state = state;
+	                _this5.state = state;
 	
-	                _this4.isOpen = true;
+	                _this5.isOpen = true;
 	
-	                if (typeof (callback = _this4.config.callbacks.onOpen) === 'function') {
+	                if (typeof (callback = _this5.config.callbacks.onOpen) === 'function') {
 	                    callback();
 	                }
 	            }).catch(function (err) {
@@ -547,22 +550,22 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }, {
 	        key: 'unbuild',
 	        value: function unbuild() {
-	            var _this5 = this;
+	            var _this6 = this;
 	
 	            return this.hide().then(function () {
 	                var callback = null;
 	
-	                if (_this5.dom.root) {
-	                    _this5.dom.root.parentElement.removeChild(_this5.dom.root);
+	                if (_this6.dom.root) {
+	                    _this6.dom.root.parentElement.removeChild(_this6.dom.root);
 	                }
 	
-	                _this5.unbindEvents(_this5.bindingsCalendar);
+	                _this6.unbindEvents(_this6.bindingsCalendar);
 	
-	                _this5.dom.root = _this5.dom.buttonPrevYear = _this5.dom.buttonNextYear = _this5.dom.buttonPrevMonth = _this5.dom.buttonNextMonth = null;
+	                _this6.dom.root = _this6.dom.buttonPrevYear = _this6.dom.buttonNextYear = _this6.dom.buttonPrevMonth = _this6.dom.buttonNextMonth = null;
 	
-	                _this5.isOpen = false;
+	                _this6.isOpen = false;
 	
-	                if (typeof (callback = _this5.config.callbacks.onClose) === 'function') {
+	                if (typeof (callback = _this6.config.callbacks.onClose) === 'function') {
 	                    callback();
 	                }
 	            }).catch(function (err) {
@@ -758,23 +761,23 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }, {
 	        key: 'show',
 	        value: function show(html) {
-	            var _this6 = this;
+	            var _this7 = this;
 	
 	            return Promise.resolve().then(function () {
 	                var temp = document.createElement('div');
 	
 	                temp.innerHTML = html;
 	
-	                _this6.dom.root = temp.firstElementChild;
+	                _this7.dom.root = temp.firstElementChild;
 	
-	                _this6.dom.root.style.opacity = '0';
+	                _this7.dom.root.style.opacity = '0';
 	
-	                _this6.dom.input.parentElement.insertBefore(_this6.dom.root, _this6.dom.input.nextElementSibling);
+	                _this7.dom.input.parentElement.insertBefore(_this7.dom.root, _this7.dom.input.nextElementSibling);
 	
-	                _this6.dom.root.style.transition = 'opacity ' + _this6.config.animation.duration + 'ms';
+	                _this7.dom.root.style.transition = 'opacity ' + _this7.config.animation.duration + 'ms';
 	
 	                return new Promise(function (resolve) {
-	                    _this6.dom.root.addEventListener('transitionend', function handler(e) {
+	                    _this7.dom.root.addEventListener('transitionend', function handler(e) {
 	                        if (e.propertyName !== 'opacity') return;
 	
 	                        resolve();
@@ -783,12 +786,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    });
 	
 	                    setTimeout(function () {
-	                        return _this6.dom.root.style.opacity = '1';
+	                        return _this7.dom.root.style.opacity = '1';
 	                    });
 	                });
 	            }).then(function () {
-	                _this6.dom.root.style.transition = '';
-	                _this6.dom.root.style.opacity = '';
+	                _this7.dom.root.style.transition = '';
+	                _this7.dom.root.style.opacity = '';
 	            });
 	        }
 	
@@ -817,7 +820,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }, {
 	        key: 'updateView',
 	        value: function updateView(html, action) {
-	            var _this7 = this;
+	            var _this8 = this;
 	
 	            return Promise.resolve().then(function () {
 	                var temp = document.createElement('div');
@@ -827,25 +830,25 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	                temp.innerHTML = html;
 	
-	                _this7.unbindEvents(_this7.bindingsCalendar);
+	                _this8.unbindEvents(_this8.bindingsCalendar);
 	
 	                if (action) {
 	                    newHeader = temp.querySelector('[data-ref="header"]');
 	                    newMonth = temp.querySelector('[data-ref="month"]');
 	
-	                    _this7.dom.root.replaceChild(newHeader, _this7.dom.header);
-	                    _this7.dom.calendar.appendChild(newMonth, _this7.dom.month);
+	                    _this8.dom.root.replaceChild(newHeader, _this8.dom.header);
+	                    _this8.dom.calendar.appendChild(newMonth, _this8.dom.month);
 	
-	                    return _this7.animateMonthTransition(_this7.dom.calendar.lastElementChild, _this7.dom.month, action);
+	                    return _this8.animateMonthTransition(_this8.dom.calendar.lastElementChild, _this8.dom.month, action);
 	                }
 	
-	                _this7.dom.root.innerHTML = temp.firstChild.innerHTML;
+	                _this8.dom.root.innerHTML = temp.firstChild.innerHTML;
 	            }).then(function () {
 	                var _bindingsCalendar2;
 	
-	                _this7.cacheCalendarDom();
+	                _this8.cacheCalendarDom();
 	
-	                (_bindingsCalendar2 = _this7.bindingsCalendar).push.apply(_bindingsCalendar2, _toConsumableArray(_this7.bindEvents(_eventsCalendar2.default)));
+	                (_bindingsCalendar2 = _this8.bindingsCalendar).push.apply(_bindingsCalendar2, _toConsumableArray(_this8.bindEvents(_eventsCalendar2.default)));
 	            });
 	        }
 	
@@ -860,16 +863,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }, {
 	        key: 'animateMonthTransition',
 	        value: function animateMonthTransition(newMonth, oldMonth, action) {
-	            var _this8 = this;
+	            var _this9 = this;
 	
 	            var parent = oldMonth.parentElement;
 	
 	            return new Promise(function (resolve) {
-	                var duration = _this8.config.animation.duration;
-	                var easing = _this8.config.animation.easing;
+	                var duration = _this9.config.animation.duration;
+	                var easing = _this9.config.animation.easing;
 	                var translate = _CssTranslates2.default[action];
 	
-	                _this8.isTransitioning = true;
+	                _this9.isTransitioning = true;
 	
 	                parent.addEventListener('transitionend', function handler(e) {
 	                    if (e.propertyName !== 'transform' || !e.target.matches('[data-ref="month"]')) return;
@@ -894,7 +897,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                newMonth.style.transition = '';
 	                newMonth.style.transform = '';
 	
-	                _this8.isTransitioning = false;
+	                _this9.isTransitioning = false;
 	            });
 	        }
 	
