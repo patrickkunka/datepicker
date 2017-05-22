@@ -220,7 +220,7 @@ You may use this reference to interact with the datepicker via its API.
 ```js
 const picker = datepicker(input);
 
-picker.open()
+picker.open();
 ```
 
 Each datepicker instance exposes the following methods:
