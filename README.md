@@ -47,7 +47,9 @@ datepicker('input[type="text"]');
 
 If the provided input has a value, it will be loaded into the datepicker on instantiation and set as the selected date. Otherwise, the datepicker will show the current month when opened.
 
-Once a date has been selected, the `<input>`'s value will be updated with the new date, and a `change` event will be dispatched from the `<input>`.
+Once a date has been selected, the `<input>`'s value will be updated with the new date, and a `change` event will be dispatched from the `<input>` element.
+
+A demo is included in the repo for a basic example of instantiation and styling.
 
 ### Configuration
 
