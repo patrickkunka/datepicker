@@ -65,7 +65,7 @@ datepicker(input, {
 });
 ```
 
-By default, each datepicker will be instantiation with the following default options:
+By default, each datepicker will be instantiation with the following default options. Each option is documented below.
 
 ```js
 {
