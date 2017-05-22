@@ -16,7 +16,7 @@ Firstly, install and load the datepicker package using your preferred method.
 Import the datepicker factory function into your module
 
 ```js
-import datepicker from 'datepicker'
+import datepicker from 'datepicker';
 ```
 
 You may also load datepicker via a `<script>` tag, and the `datepicker` factory function will be added to the global namespace.
