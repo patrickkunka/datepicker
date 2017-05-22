@@ -210,31 +210,35 @@ The function receives an ISO 8601 string and should return a string.
 
 ### Datepicker API
 
-The datepicker factory function returns a reference to the datepicker instance when called:
+The datepicker factory function returns a reference to the datepicker instance when called.
+
+You may use this reference to interact with the datepicker via its API.
 
 ```js
 const picker = datepicker(input);
+
+picker.open()
 ```
 
-You may use this reference to interact with the datepicker via its API. Each datepicker instance exposes the following methods:
+Each datepicker instance exposes the following methods:
 
-#### `.getValue()`
+- `.getValue()`
 
 Retrieves the currently selected value from the datepicker. The value is filtered through the `transform.output` function before being returned, if provided.
 
-#### `.setValue()`
+- `.setValue()`
 
 Programmatically sets the value of the datepicker. If the calendar is open, it will be re-rendered. The value is filtered through a `transform.input` function before being set, if provided. Does not update the value of the `<input>` element.
 
-#### `.open()`
+- `.open()`
 
 Programmaticaly opens the calendar. Returns a promise which resolves when the open animation is finished.
 
-#### `.close()`
+- `.close()`
 
 Programmatically closes the calendar.  Returns a promise which resolves when the close animation is finished.
 
-#### `.destroy()`
+- `.destroy()`
 
 Destroys the datepicker instance by unbinding event handlers, removes it from the internal cache, and removes any calendar markup from the DOM (if open).
 
