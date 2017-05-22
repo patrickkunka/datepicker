@@ -1,6 +1,6 @@
 # Datepicker
 
-A dependency-free vanilla JS datepicker widget for enhancing `<input>` elements.
+A dependency-free vanilla JS datepicker widget for enhancing `<input>` elements with calendar UI.
 
 - [Installation](#installation)
 - [Instantiation](#instantiation)
@@ -49,7 +49,7 @@ If the provided input has a value, it will be loaded into the datepicker on inst
 
 Once a date has been selected, the `<input>`'s value will be updated with the new date, and a `change` event will be dispatched from the `<input>` element.
 
-A demo is included in the repo for a basic example of instantiation and styling.
+A demo is included in the repository for a basic example of instantiation and styling.
 
 ### Configuration
 
@@ -121,7 +121,7 @@ A collection of options related to animation.
 
 - `duration`
 
-A number dictacting the duration of all animations.
+A number dictating the duration of all animations.
 
 |Type | Default
 |---  | ---
@@ -235,7 +235,7 @@ Programmatically sets the value of the datepicker. If the calendar is open, it w
 
 - `.open()`
 
-Programmaticaly opens the calendar. Returns a promise which resolves when the open animation is finished.
+Programmatically opens the calendar. Returns a promise which resolves when the open animation is finished.
 
 - `.close()`
 
