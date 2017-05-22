@@ -243,7 +243,7 @@ Programmatically closes the calendar.  Returns a promise which resolves when the
 
 - `.destroy()`
 
-Destroys the datepicker instance by unbinding event handlers, removes it from the internal cache, and removes any calendar markup from the DOM (if open).
+Destroys the datepicker instance by unbinding event handlers, deletes it from the internal cache for garbage collection, and removes any calendar markup from the DOM (if open).
 
 ---
 *&copy; 2017 Patrick Kunka / KunkaLabs Ltd*
