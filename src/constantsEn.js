@@ -6,6 +6,3 @@ export const MONTHS = [
 export const DAYS = [
     'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'
 ];
-
-Object.freeze(MONTHS);
-Object.freeze(DAYS);

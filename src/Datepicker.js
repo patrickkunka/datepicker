@@ -1,13 +1,13 @@
-import State            from './State';
-import Config           from './config/Config';
+import Actions          from './Actions';
+import ConfigRoot       from './config/ConfigRoot';
+import CssTranslates    from './CssTranslates';
 import Dom              from './Dom';
 import EventBinding     from './EventBinding';
-import Util             from './Util';
 import eventsInput      from './eventsInput.json';
 import eventsCalendar   from './eventsCalendar.json';
+import State            from './State';
 import Templates        from './Templates';
-import Actions          from './Actions';
-import CssTranslates    from './CssTranslates';
+import Util             from './Util';
 
 import Month            from './models/Month';
 import Day              from './models/Day';
@@ -15,30 +15,6 @@ import DayMarker        from './models/DayMarker';
 import Week             from './models/Week';
 
 class Datepicker {
-    constructor() {
-        const _ = new _Datepicker(...arguments);
-
-        this.open       = _.open.bind(_);
-        this.close      = _.close.bind(_);
-        this.getValue   = _.getValue.bind(_);
-        this.setValue   = _.setValue.bind(_);
-        this.destroy    = _.destroy.bind(_);
-
-        Object.defineProperties(this, {
-            input: {
-                get() {
-                    return _.dom.input;
-                }
-            }
-        });
-
-        Object.freeze(this);
-    }
-}
-
-Datepicker.cache = [];
-
-class _Datepicker {
     /**
      * @constructor
      * @param {HTMLInputElement} input
@@ -49,7 +25,7 @@ class _Datepicker {
         this.value              = '';
         this.state              = null;
         this.dom                = new Dom();
-        this.config             = new Config();
+        this.config             = new ConfigRoot();
         this.isOpen             = false;
         this.isFocussing        = false;
         this.isTransitioning    = false;
@@ -92,7 +68,7 @@ class _Datepicker {
      */
 
     configure(config) {
-        Util.extend(this.config, config, true, _Datepicker.handleConfigureError.bind(this));
+        Util.extend(this.config, config, true, Datepicker.handleConfigureError.bind(this));
     }
 
     /**
@@ -184,7 +160,7 @@ class _Datepicker {
 
         this.isFocussing = true;
 
-        setTimeout(() => (this.isFocussing = false), _Datepicker.FOCUS_BLOCK_DURATION);
+        setTimeout(() => (this.isFocussing = false), Datepicker.FOCUS_BLOCK_DURATION);
 
         this.build();
     }
@@ -277,7 +253,7 @@ class _Datepicker {
      */
 
     updateState(action='') {
-        const state = action ? _Datepicker.getStateFromAction(this.state, action) : _Datepicker.getStateFromDate(this.value);
+        const state = action ? Datepicker.getStateFromAction(this.state, action) : Datepicker.getStateFromDate(this.value);
         const data  = this.getMonthData(state);
         const html  = this.render(data);
 
@@ -304,7 +280,7 @@ class _Datepicker {
      */
 
     build() {
-        const state = this.value ? _Datepicker.getStateFromDate(this.value) : _Datepicker.getStateFromToday();
+        const state = this.value ? Datepicker.getStateFromDate(this.value) : Datepicker.getStateFromToday();
         const data  = this.getMonthData(state);
         const html  = this.render(data);
 
@@ -879,6 +855,6 @@ class _Datepicker {
     }
 }
 
-_Datepicker.FOCUS_BLOCK_DURATION = 200;
+Datepicker.FOCUS_BLOCK_DURATION = 200;
 
 export default Datepicker;

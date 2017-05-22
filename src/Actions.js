@@ -45,4 +45,4 @@ Actions.GO_TO_PREV_YEAR = (prevState) => {
     return newState;
 };
 
-export default Object.freeze(Actions);
+export default Actions;

@@ -56,9 +56,9 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	'use strict';
 	
-	var _Datepicker = __webpack_require__(1);
+	var _Facade = __webpack_require__(23);
 	
-	var _Datepicker2 = _interopRequireDefault(_Datepicker);
+	var _Facade2 = _interopRequireDefault(_Facade);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -76,13 +76,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	        input = document.querySelector(input);
 	    }
 	
-	    for (var i = 0; instance = _Datepicker2.default.cache[i]; i++) {
+	    for (var i = 0; instance = _Facade2.default.cache[i]; i++) {
 	        if (instance.input === input) return instance;
 	    }
 	
-	    instance = new _Datepicker2.default(input, config);
+	    instance = new _Facade2.default(input, config);
 	
-	    _Datepicker2.default.cache.push(instance);
+	    _Facade2.default.cache.push(instance);
 	
 	    return instance;
 	}
@@ -103,13 +103,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
-	var _State = __webpack_require__(2);
+	var _Actions = __webpack_require__(15);
 	
-	var _State2 = _interopRequireDefault(_State);
+	var _Actions2 = _interopRequireDefault(_Actions);
 	
-	var _Config = __webpack_require__(3);
+	var _ConfigRoot = __webpack_require__(24);
 	
-	var _Config2 = _interopRequireDefault(_Config);
+	var _ConfigRoot2 = _interopRequireDefault(_ConfigRoot);
+	
+	var _CssTranslates = __webpack_require__(16);
+	
+	var _CssTranslates2 = _interopRequireDefault(_CssTranslates);
 	
 	var _Dom = __webpack_require__(9);
 	
@@ -119,10 +123,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	var _EventBinding2 = _interopRequireDefault(_EventBinding);
 	
-	var _Util = __webpack_require__(11);
-	
-	var _Util2 = _interopRequireDefault(_Util);
-	
 	var _eventsInput = __webpack_require__(12);
 	
 	var _eventsInput2 = _interopRequireDefault(_eventsInput);
@@ -131,17 +131,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	var _eventsCalendar2 = _interopRequireDefault(_eventsCalendar);
 	
+	var _State = __webpack_require__(2);
+	
+	var _State2 = _interopRequireDefault(_State);
+	
 	var _Templates = __webpack_require__(14);
 	
 	var _Templates2 = _interopRequireDefault(_Templates);
 	
-	var _Actions = __webpack_require__(15);
+	var _Util = __webpack_require__(11);
 	
-	var _Actions2 = _interopRequireDefault(_Actions);
-	
-	var _CssTranslates = __webpack_require__(16);
-	
-	var _CssTranslates2 = _interopRequireDefault(_CssTranslates);
+	var _Util2 = _interopRequireDefault(_Util);
 	
 	var _Month = __webpack_require__(18);
 	
@@ -165,46 +165,22 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
-	var Datepicker = function Datepicker() {
-	    _classCallCheck(this, Datepicker);
-	
-	    var _ = new (Function.prototype.bind.apply(_Datepicker, [null].concat(Array.prototype.slice.call(arguments))))();
-	
-	    this.open = _.open.bind(_);
-	    this.close = _.close.bind(_);
-	    this.getValue = _.getValue.bind(_);
-	    this.setValue = _.setValue.bind(_);
-	    this.destroy = _.destroy.bind(_);
-	
-	    Object.defineProperties(this, {
-	        input: {
-	            get: function get() {
-	                return _.dom.input;
-	            }
-	        }
-	    });
-	
-	    Object.freeze(this);
-	};
-	
-	Datepicker.cache = [];
-	
-	var _Datepicker = function () {
+	var Datepicker = function () {
 	    /**
 	     * @constructor
 	     * @param {HTMLInputElement} input
 	     * @param {object}           [config={}]
 	     */
 	
-	    function _Datepicker(input) {
+	    function Datepicker(input) {
 	        var config = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 	
-	        _classCallCheck(this, _Datepicker);
+	        _classCallCheck(this, Datepicker);
 	
 	        this.value = '';
 	        this.state = null;
 	        this.dom = new _Dom2.default();
-	        this.config = new _Config2.default();
+	        this.config = new _ConfigRoot2.default();
 	        this.isOpen = false;
 	        this.isFocussing = false;
 	        this.isTransitioning = false;
@@ -224,7 +200,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	     * @return {void}
 	     */
 	
-	    _createClass(_Datepicker, [{
+	    _createClass(Datepicker, [{
 	        key: 'init',
 	        value: function init(input, config) {
 	            var _bindingsInput;
@@ -253,7 +229,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }, {
 	        key: 'configure',
 	        value: function configure(config) {
-	            _Util2.default.extend(this.config, config, true, _Datepicker.handleConfigureError.bind(this));
+	            _Util2.default.extend(this.config, config, true, Datepicker.handleConfigureError.bind(this));
 	        }
 	
 	        /**
@@ -363,7 +339,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	            setTimeout(function () {
 	                return _this2.isFocussing = false;
-	            }, _Datepicker.FOCUS_BLOCK_DURATION);
+	            }, Datepicker.FOCUS_BLOCK_DURATION);
 	
 	            this.build();
 	        }
@@ -472,7 +448,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	            var action = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
 	
-	            var state = action ? _Datepicker.getStateFromAction(this.state, action) : _Datepicker.getStateFromDate(this.value);
+	            var state = action ? Datepicker.getStateFromAction(this.state, action) : Datepicker.getStateFromDate(this.value);
 	            var data = this.getMonthData(state);
 	            var html = this.render(data);
 	
@@ -503,7 +479,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        value: function build() {
 	            var _this5 = this;
 	
-	            var state = this.value ? _Datepicker.getStateFromDate(this.value) : _Datepicker.getStateFromToday();
+	            var state = this.value ? Datepicker.getStateFromDate(this.value) : Datepicker.getStateFromToday();
 	            var data = this.getMonthData(state);
 	            var html = this.render(data);
 	
@@ -1108,10 +1084,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	    }]);
 	
-	    return _Datepicker;
+	    return Datepicker;
 	}();
 	
-	_Datepicker.FOCUS_BLOCK_DURATION = 200;
+	Datepicker.FOCUS_BLOCK_DURATION = 200;
 	
 	exports.default = Datepicker;
 
@@ -1176,55 +1152,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.default = State;
 
 /***/ },
-/* 3 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-	
-	var _ConfigAnimation = __webpack_require__(4);
-	
-	var _ConfigAnimation2 = _interopRequireDefault(_ConfigAnimation);
-	
-	var _ConfigBehavior = __webpack_require__(5);
-	
-	var _ConfigBehavior2 = _interopRequireDefault(_ConfigBehavior);
-	
-	var _ConfigCallbacks = __webpack_require__(6);
-	
-	var _ConfigCallbacks2 = _interopRequireDefault(_ConfigCallbacks);
-	
-	var _ConfigClassNames = __webpack_require__(7);
-	
-	var _ConfigClassNames2 = _interopRequireDefault(_ConfigClassNames);
-	
-	var _ConfigTransform = __webpack_require__(8);
-	
-	var _ConfigTransform2 = _interopRequireDefault(_ConfigTransform);
-	
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-	
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-	
-	var Config = function Config() {
-	    _classCallCheck(this, Config);
-	
-	    this.animation = new _ConfigAnimation2.default();
-	    this.behavior = new _ConfigBehavior2.default();
-	    this.callbacks = new _ConfigCallbacks2.default();
-	    this.classNames = new _ConfigClassNames2.default();
-	    this.transform = new _ConfigTransform2.default();
-	
-	    Object.seal(this);
-	    Object.freeze(this);
-	};
-	
-	exports.default = Config;
-
-/***/ },
+/* 3 */,
 /* 4 */
 /***/ function(module, exports) {
 
@@ -1672,7 +1600,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return Util;
 	}();
 	
-	exports.default = Object.freeze(Util);
+	exports.default = Util;
 
 /***/ },
 /* 12 */
@@ -1731,7 +1659,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	Templates.container = _Util2.default.template('<div class="${containerClassName}">' + '<header data-ref="header" class="${headerClassName}">' + '<span class="${buttonGroupClassName}">' + '<button class="${buttonPrevYearClassName}" type="button" data-ref="button" data-action="GO_TO_PREV_YEAR"></button> ' + '<button class="${buttonPrevMonthClassName}" type="button" data-ref="button" data-action="GO_TO_PREV_MONTH"></button> ' + '</span> ' + '<span class="${headingClassName}">${monthName} ${year}</span> ' + '<span class="${buttonGroupClassName}">' + '<button class="${buttonNextMonthClassName}" type="button" data-ref="button" data-action="GO_TO_NEXT_MONTH"></button> ' + '<button class="${buttonNextYearClassName}" type="button" data-ref="button" data-action="GO_TO_NEXT_YEAR"></button>' + '</span>' + '</header>' + '<div class="${calendarClassName}" data-ref="calendar">' + '<table class="${monthClassName}" data-ref="month">' + '<thead>' + '<tr>${legendHtml}</tr>' + '</thead>' + '<tbody data-ref="tbody">${weeksHtml}</tbody>' + '</table>' + '</div>' + '</div>');
 	
-	exports.default = Object.freeze(Templates);
+	exports.default = Templates;
 
 /***/ },
 /* 15 */
@@ -1798,7 +1726,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return newState;
 	};
 	
-	exports.default = Object.freeze(Actions);
+	exports.default = Actions;
 
 /***/ },
 /* 16 */
@@ -1823,7 +1751,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	Transforms.GO_TO_NEXT_YEAR = new _CssTranslate2.default([0, 0], [-100, 100], [0, -100], [-100, 0]);
 	Transforms.GO_TO_PREV_YEAR = new _CssTranslate2.default([0, 0], [-100, -100], [0, 100], [-100, 0]);
 	
-	exports.default = Object.freeze(Transforms);
+	exports.default = Transforms;
 
 /***/ },
 /* 17 */
@@ -1866,7 +1794,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
-	var _constantsEn = __webpack_require__(19);
+	var _ConstantsEn = __webpack_require__(25);
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
@@ -1897,7 +1825,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    _createClass(Month, [{
 	        key: 'monthName',
 	        get: function get() {
-	            return _constantsEn.MONTHS[this.monthIndex];
+	            return _ConstantsEn.MONTHS[this.monthIndex];
 	        }
 	    }]);
 	
@@ -1907,22 +1835,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.default = Month;
 
 /***/ },
-/* 19 */
-/***/ function(module, exports) {
-
-	'use strict';
-	
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-	var MONTHS = exports.MONTHS = ['January', 'February', 'March', 'April', 'May', 'Jun', 'July', 'August', 'September', 'October', 'November', 'December'];
-	
-	var DAYS = exports.DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-	
-	Object.freeze(MONTHS);
-	Object.freeze(DAYS);
-
-/***/ },
+/* 19 */,
 /* 20 */
 /***/ function(module, exports) {
 
@@ -1962,7 +1875,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
-	var _constantsEn = __webpack_require__(19);
+	var _ConstantsEn = __webpack_require__(25);
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
@@ -1979,7 +1892,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    _createClass(DayMarker, [{
 	        key: 'dayName',
 	        get: function get() {
-	            return _constantsEn.DAYS[this.dayIndex];
+	            return _ConstantsEn.DAYS[this.dayIndex];
 	        }
 	    }, {
 	        key: 'dayShortName',
@@ -2016,6 +1929,112 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 	
 	exports.default = Week;
+
+/***/ },
+/* 23 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	
+	var _Datepicker2 = __webpack_require__(1);
+	
+	var _Datepicker3 = _interopRequireDefault(_Datepicker2);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	var Datepicker = function Datepicker() {
+	    _classCallCheck(this, Datepicker);
+	
+	    var _ = new (Function.prototype.bind.apply(_Datepicker3.default, [null].concat(Array.prototype.slice.call(arguments))))();
+	
+	    this.open = _.open.bind(_);
+	    this.close = _.close.bind(_);
+	    this.getValue = _.getValue.bind(_);
+	    this.setValue = _.setValue.bind(_);
+	    this.destroy = _.destroy.bind(_);
+	
+	    Object.defineProperties(this, {
+	        input: {
+	            get: function get() {
+	                return _.dom.input;
+	            }
+	        }
+	    });
+	
+	    Object.freeze(this);
+	};
+	
+	Datepicker.cache = [];
+	
+	exports.default = Datepicker;
+
+/***/ },
+/* 24 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	
+	var _ConfigAnimation = __webpack_require__(4);
+	
+	var _ConfigAnimation2 = _interopRequireDefault(_ConfigAnimation);
+	
+	var _ConfigBehavior = __webpack_require__(5);
+	
+	var _ConfigBehavior2 = _interopRequireDefault(_ConfigBehavior);
+	
+	var _ConfigCallbacks = __webpack_require__(6);
+	
+	var _ConfigCallbacks2 = _interopRequireDefault(_ConfigCallbacks);
+	
+	var _ConfigClassNames = __webpack_require__(7);
+	
+	var _ConfigClassNames2 = _interopRequireDefault(_ConfigClassNames);
+	
+	var _ConfigTransform = __webpack_require__(8);
+	
+	var _ConfigTransform2 = _interopRequireDefault(_ConfigTransform);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	var ConfigRoot = function ConfigRoot() {
+	    _classCallCheck(this, ConfigRoot);
+	
+	    this.animation = new _ConfigAnimation2.default();
+	    this.behavior = new _ConfigBehavior2.default();
+	    this.callbacks = new _ConfigCallbacks2.default();
+	    this.classNames = new _ConfigClassNames2.default();
+	    this.transform = new _ConfigTransform2.default();
+	
+	    Object.seal(this);
+	    Object.freeze(this);
+	};
+	
+	exports.default = ConfigRoot;
+
+/***/ },
+/* 25 */
+/***/ function(module, exports) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	var MONTHS = exports.MONTHS = ['January', 'February', 'March', 'April', 'May', 'Jun', 'July', 'August', 'September', 'October', 'November', 'December'];
+	
+	var DAYS = exports.DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
 /***/ }
 /******/ ])

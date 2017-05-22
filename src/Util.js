@@ -116,8 +116,8 @@ class Util {
         }
 
         for (let i = 0; i < sourceKeys.length; i++) {
-            let key = sourceKeys[i];
-            let descriptor = Object.getOwnPropertyDescriptor(source, key);
+            const key = sourceKeys[i];
+            const descriptor = Object.getOwnPropertyDescriptor(source, key);
 
             // Skip virtual properties
 
@@ -165,7 +165,7 @@ class Util {
 
     static camelCase(str) {
         return str.toLowerCase()
-                .replace(/([_-][a-z0-9])/g, $1 => $1.toUpperCase().replace(/[_-]/, ''));
+            .replace(/([_-][a-z0-9])/g, $1 => $1.toUpperCase().replace(/[_-]/, ''));
     }
 
     /**
@@ -212,4 +212,4 @@ class Util {
     }
 }
 
-export default Object.freeze(Util);
+export default Util;

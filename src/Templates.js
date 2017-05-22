@@ -32,4 +32,4 @@ Templates.container = Util.template(
     '</div>'
 );
 
-export default Object.freeze(Templates);
+export default Templates;

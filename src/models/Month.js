@@ -1,4 +1,4 @@
-import {MONTHS} from '../constantsEn';
+import {MONTHS} from '../ConstantsEn';
 
 class Month {
     constructor() {

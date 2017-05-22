@@ -4,7 +4,7 @@ import ConfigCallbacks  from './ConfigCallbacks';
 import ConfigClassNames from './ConfigClassNames';
 import ConfigTransform  from './ConfigTransform';
 
-class Config {
+class ConfigRoot {
     constructor() {
         this.animation  = new ConfigAnimation();
         this.behavior   = new ConfigBehavior();
@@ -17,4 +17,4 @@ class Config {
     }
 }
 
-export default Config;
+export default ConfigRoot;

@@ -1,4 +1,4 @@
-import Datepicker from './Datepicker';
+import Facade from './Facade';
 
 /**
  * @param {(HTMLInputElement|string)}   input
@@ -12,13 +12,13 @@ function factory(input, config={}) {
         input = document.querySelector(input);
     }
 
-    for (let i = 0; (instance = Datepicker.cache[i]); i++) {
+    for (let i = 0; (instance = Facade.cache[i]); i++) {
         if (instance.input === input) return instance;
     }
 
-    instance = new Datepicker(input, config);
+    instance = new Facade(input, config);
 
-    Datepicker.cache.push(instance);
+    Facade.cache.push(instance);
 
     return instance;
 }
