@@ -13,7 +13,7 @@ Firstly, install the package from github using your package manager of choice. D
 
 `npm install https://github.com/patrickkunka/datepicker.git`
 
-Import the datepicker factory function into your module
+You may then import the datepicker factory function into your project's modules.
 
 ```js
 import datepicker from 'datepicker';
