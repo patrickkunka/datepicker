@@ -9,7 +9,7 @@ A dependency-free vanilla JS datepicker widget for enhancing `<input>` elements 
 
 ## Installation
 
-Firstly, install the package from github using your package manager of choice.
+Firstly, install the package from github using your package manager of choice. (NB: I'll add this to NPM once I think of a better name and add some tests)
 
 `npm install https://github.com/patrickkunka/datepicker.git --save-dev`
 
