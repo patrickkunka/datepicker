@@ -1,18 +1,19 @@
-import Actions          from './Actions';
-import ConfigRoot       from './config/ConfigRoot';
-import CssTranslates    from './CssTranslates';
-import Dom              from './Dom';
-import EventBinding     from './EventBinding';
-import eventsInput      from './eventsInput.json';
-import eventsCalendar   from './eventsCalendar.json';
-import State            from './State';
-import Templates        from './Templates';
-import Util             from './Util';
+import * as Actions         from './Actions';
+import ConfigRoot           from './config/ConfigRoot';
+import * as CssTranslates   from './CssTranslates';
+import Dom                  from './Dom';
+import EventBinding         from './EventBinding';
+import eventsInput          from './eventsInput.json';
+import eventsCalendar       from './eventsCalendar.json';
+import State                from './State';
+import Templates            from './Templates';
+import Util                 from './Util';
 
-import Month            from './models/Month';
-import Day              from './models/Day';
-import DayMarker        from './models/DayMarker';
-import Week             from './models/Week';
+
+import Month                from './models/Month';
+import Day                  from './models/Day';
+import DayMarker            from './models/DayMarker';
+import Week                 from './models/Week';
 
 class Datepicker {
     /**

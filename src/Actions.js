@@ -1,9 +1,7 @@
 import State from './State';
 import Util  from './Util';
 
-const Actions = {};
-
-Actions.GO_TO_NEXT_MONTH = (prevState) => {
+export const GO_TO_NEXT_MONTH = (prevState) => {
     const newState = Util.extend(new State(), prevState);
 
     if (newState.monthIndex === 11) { // eslint-disable-line no-magic-numbers
@@ -16,7 +14,7 @@ Actions.GO_TO_NEXT_MONTH = (prevState) => {
     return newState;
 };
 
-Actions.GO_TO_PREV_MONTH = (prevState) => {
+export const GO_TO_PREV_MONTH = (prevState) => {
     const newState = Util.extend(new State(), prevState);
 
     if (newState.monthIndex === 0) {
@@ -29,7 +27,7 @@ Actions.GO_TO_PREV_MONTH = (prevState) => {
     return newState;
 };
 
-Actions.GO_TO_NEXT_YEAR = (prevState) => {
+export const GO_TO_NEXT_YEAR = (prevState) => {
     const newState = Util.extend(new State(), prevState);
 
     newState.year++;
@@ -37,12 +35,10 @@ Actions.GO_TO_NEXT_YEAR = (prevState) => {
     return newState;
 };
 
-Actions.GO_TO_PREV_YEAR = (prevState) => {
+export const GO_TO_PREV_YEAR = (prevState) => {
     const newState = Util.extend(new State(), prevState);
 
     newState.year--;
 
     return newState;
 };
-
-export default Actions;
