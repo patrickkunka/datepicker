@@ -53,7 +53,7 @@ A demo is included in the repository for a basic example of instantiation and st
 
 ## Configuration
 
-If you wish to customise the functionality of a datepicker, simply pass a configuration object as a second parameter to the factory function.
+If you wish to customise the functionality of a datepicker, an optional configuration object can be passed as a second parameter to the factory function.
 
 ```js
 datepicker(input, {
