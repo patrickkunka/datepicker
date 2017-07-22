@@ -1,5 +1,5 @@
-import Facade    from './Facade';
-import Constants from './Constants';
+import Facade           from './Facade';
+import * as Constants   from './Constants';
 
 /**
  * @param {(HTMLInputElement|string)}   input
