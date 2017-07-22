@@ -222,8 +222,8 @@ class Datepicker {
 
     handleTbodyClick(e) {
         const cell        = Util.closestParent(e.target, '[data-ref="day"]', true);
-        const eventConfig = {bubbles: true};
-        const toEmit      = [new Event('input', eventConfig), new Event('change', eventConfig)];
+        const eventConfig = {bubbles: true, cancelable: true};
+        const toEmit      = [new CustomEvent('input', eventConfig), new CustomEvent('change', eventConfig)];
 
         let day         = -1;
         let month       = -1;

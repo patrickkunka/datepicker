@@ -1,4 +1,5 @@
-import Facade from './Facade';
+import Facade    from './Facade';
+import Constants from './Constants';
 
 /**
  * @param {(HTMLInputElement|string)}   input
@@ -22,5 +23,7 @@ function factory(input, config={}) {
 
     return instance;
 }
+
+factory.Constants = Constants;
 
 module.exports = factory;
