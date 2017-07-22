@@ -1,4 +1,3 @@
-import * as Actions         from './Actions';
 import ConfigRoot           from './config/ConfigRoot';
 import * as CssTranslates   from './CssTranslates';
 import Dom                  from './Dom';
@@ -6,14 +5,22 @@ import EventBinding         from './EventBinding';
 import eventsInput          from './eventsInput.json';
 import eventsCalendar       from './eventsCalendar.json';
 import State                from './State';
-import Templates            from './Templates';
 import Util                 from './Util';
 
-
+import Button               from './models/Button';
 import Month                from './models/Month';
 import Day                  from './models/Day';
 import DayMarker            from './models/DayMarker';
 import Week                 from './models/Week';
+
+import {default as reducer} from './Reducers';
+
+import {
+    ACTION_TYPE_GO_TO_PREV_YEAR,
+    ACTION_TYPE_GO_TO_PREV_MONTH,
+    ACTION_TYPE_GO_TO_NEXT_MONTH,
+    ACTION_TYPE_GO_TO_NEXT_YEAR
+} from './Constants';
 
 class Datepicker {
     /**
@@ -186,18 +193,29 @@ class Datepicker {
     handleHeaderClick(e) {
         const button = Util.closestParent(e.target, '[data-ref~="button"]', true);
 
-        let action = '';
+        let actionType = '';
 
         e.stopPropagation();
 
         if (!button || this.isTransitioning) return;
 
-        action = button.getAttribute('data-action');
+        actionType = button.getAttribute('data-action');
 
-        this.updateState(action);
+        this.updateState(actionType);
     }
 
     /**
+     * @private
+     * @param   {MouseEvent} e
+     * @return  {void}
+     */
+
+    handleTheadClick(e) {
+        e.stopPropagation();
+    }
+
+    /**
+     * @private
      * @param   {MouseEvent} e
      * @return  {void}
      */
@@ -249,22 +267,22 @@ class Datepicker {
 
     /**
      * @private
-     * @param   {string} [action='']
+     * @param   {string} [actionType='']
      * @return  {Promise}
      */
 
-    updateState(action='') {
-        const state = action ? Datepicker.getStateFromAction(this.state, action) : Datepicker.getStateFromDate(this.value);
+    updateState(actionType='') {
+        const state = actionType ? Datepicker.getStateFromAction(this.state, actionType) : Datepicker.getStateFromDate(this.value);
         const data  = this.getMonthData(state);
         const html  = this.render(data);
 
         this.state = state;
 
-        return this.updateView(html, action)
+        return this.updateView(html, actionType)
             .then(() => {
                 let callback = null;
 
-                if (action) {
+                if (actionType) {
                     callback = this.config.callbacks.onChangeView;
                 }
 
@@ -313,6 +331,7 @@ class Datepicker {
         this.dom.header   = this.dom.root.querySelector('[data-ref="header"]');
         this.dom.calendar = this.dom.root.querySelector('[data-ref="calendar"]');
         this.dom.month    = this.dom.root.querySelector('[data-ref="month"]');
+        this.dom.thead    = this.dom.root.querySelector('[data-ref="thead"]');
         this.dom.tbody    = this.dom.root.querySelector('[data-ref="tbody"]');
     }
 
@@ -390,14 +409,21 @@ class Datepicker {
         month.monthIndex = state.monthIndex;
         month.year       = state.year;
 
+        // Iterate through weeks in month
+
         for (let i = 0; i < totalWeeks; i++) {
             const week = new Week();
 
             week.className = this.getClassName('week');
 
+            // For each week, iterate through days
+
             for (let j = 0; j < 7; j++) { // eslint-disable-line no-magic-numbers
                 const classList = [];
                 const day = new Day();
+
+                // While we are in the first week, also push markers into
+                // `dayMakers` array (avoids duplicate iteration)
 
                 if (i === 0) {
                     const marker = new DayMarker();
@@ -412,7 +438,14 @@ class Datepicker {
                     marker.className = classList.join(' ');
 
                     month.dayMarkers.push(marker);
+
+                    // Flush classlist
+
+                    classList.length = 0;
                 }
+
+                // At the point we hit the first day in the month, move into
+                // "SELF" zone
 
                 if (i === 0 && j === state.startDayIndex) {
                     zone = 'SELF';
@@ -420,11 +453,16 @@ class Datepicker {
                     currentDayNumber = 1;
                 }
 
+                // A the point we pass the last day in the month, move into
+                // "NEXT" zone
+
                 if (i !== 0 && currentDayNumber > state.totalDays)  {
                     zone = 'NEXT';
 
                     currentDayNumber = 1;
                 }
+
+                // Populate a day's data
 
                 day.dayIndex    = j;
                 day.dayNumber   = currentDayNumber;
@@ -442,11 +480,16 @@ class Datepicker {
 
                 day.monthNumber = state.monthIndex + 1;
 
+                // If in the "PREV" or "NEXT" zones, ensure the day's
+                // month attribute is set accordingly
+
                 if (zone === 'PREV') {
                     day.monthNumber--;
                 } else if (zone === 'NEXT') {
                     day.monthNumber++;
                 }
+
+                // Build up the appropriate class names for the day
 
                 classList.push(this.getClassName('day'));
 
@@ -468,10 +511,16 @@ class Datepicker {
 
                 day.className = classList.join(' ');
 
+                // Increment current day number (i.e. calendar date, not index)
+
                 currentDayNumber++;
+
+                // Push day into week data
 
                 week.days.push(day);
             }
+
+            // Push week into month data
 
             month.weeks.push(week);
         }
@@ -486,10 +535,26 @@ class Datepicker {
      */
 
     render(data) {
-        data.legendHtml = data.dayMarkers.map(Templates.marker).join('');
+        data.buttonPrevYearHtml  = this.renderButton(ACTION_TYPE_GO_TO_PREV_YEAR, data.buttonPrevYearClassName);
+        data.buttonPrevMonthHtml = this.renderButton(ACTION_TYPE_GO_TO_PREV_MONTH, data.buttonPrevMonthClassName);
+        data.buttonNextMonthHtml = this.renderButton(ACTION_TYPE_GO_TO_NEXT_MONTH, data.buttonNextMonthClassName);
+        data.buttonNextYearHtml  = this.renderButton(ACTION_TYPE_GO_TO_NEXT_YEAR, data.buttonNextYearClassName);
+
+        data.legendHtml = data.dayMarkers.map(this.config.templates.marker).join('');
         data.weeksHtml  = data.weeks.map(this.renderWeek.bind(this)).join('');
 
-        return Templates.container(data);
+        return this.config.templates.container(data);
+    }
+
+    /**
+     * @private
+     * @param  {sring}  actionType
+     * @param  {string} className
+     * @return {string}
+     */
+
+    renderButton(actionType, className) {
+        return this.config.templates.button(Object.assign(new Button(), {actionType, className}));
     }
 
     /**
@@ -499,9 +564,9 @@ class Datepicker {
      */
 
     renderWeek(data) {
-        data.daysHtml = data.days.map(Templates.day).join('');
+        data.daysHtml = data.days.map(this.config.templates.day).join('');
 
-        return Templates.week(data);
+        return this.config.templates.week(data);
     }
 
     /**
@@ -587,11 +652,11 @@ class Datepicker {
     /**
      * @private
      * @param   {string} html
-     * @param   {string} action
+     * @param   {string} actionType
      * @return  {void}
      */
 
-    updateView(html, action) {
+    updateView(html, actionType) {
         return Promise.resolve()
             .then(() => {
                 const temp = document.createElement('div');
@@ -603,14 +668,14 @@ class Datepicker {
 
                 this.unbindEvents(this.bindingsCalendar);
 
-                if (action) {
+                if (actionType) {
                     newHeader = temp.querySelector('[data-ref="header"]');
                     newMonth  = temp.querySelector('[data-ref="month"]');
 
                     this.dom.root.replaceChild(newHeader, this.dom.header);
                     this.dom.calendar.appendChild(newMonth, this.dom.month);
 
-                    return this.animateMonthTransition(this.dom.calendar.lastElementChild, this.dom.month, action);
+                    return this.animateMonthTransition(this.dom.calendar.lastElementChild, this.dom.month, actionType);
                 }
 
                 this.dom.root.innerHTML = temp.firstChild.innerHTML;
@@ -626,17 +691,17 @@ class Datepicker {
      * @private
      * @param   {HTMLElement} newMonth
      * @param   {HTMLElement} oldMonth
-     * @param   {string}      action
+     * @param   {string}      actionType
      * @return  {Promise}
      */
 
-    animateMonthTransition(newMonth, oldMonth, action) {
+    animateMonthTransition(newMonth, oldMonth, actionType) {
         const parent = oldMonth.parentElement;
 
         return new Promise(resolve => {
             const duration  = this.config.animation.duration;
             const easing    = this.config.animation.easing;
-            const translate = CssTranslates[action];
+            const translate = CssTranslates[actionType];
 
             this.isTransitioning = true;
 
@@ -710,19 +775,13 @@ class Datepicker {
     /**
      * @private
      * @static
-     * @param   {State}   oldState
-     * @param   {string}  type
+     * @param   {State}   prevState
+     * @param   {string}  actionType
      * @return  {State}
      */
 
-    static getStateFromAction(oldState, type) {
-        let fn = null;
-
-        if (typeof (fn = Actions[type]) !== 'function') {
-            throw new Error(`Action "${type}" not found`);
-        }
-
-        return Object.freeze(fn(oldState));
+    static getStateFromAction(prevState, actionType) {
+        return Object.freeze(reducer(prevState, {type: actionType}));
     }
 
     /**

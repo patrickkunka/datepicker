@@ -1,4 +1,4 @@
-import {MONTHS} from '../ConstantsEn';
+import {MONTHS} from '../LocaleEn';
 
 class Month {
     constructor() {
@@ -6,6 +6,10 @@ class Month {
         this.dayMarkers                 = [];
         this.monthIndex                 = -1;
         this.year                       = -1;
+        this.buttonPrevYearHtml         = '';
+        this.buttonPrevMonthHtml        = '';
+        this.buttonNextMonthHtml        = '';
+        this.buttonNextYearHtml         = '';
         this.weeksHtml                  = '';
         this.legendHtml                 = '';
         this.calendarClassName          = '';

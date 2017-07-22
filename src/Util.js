@@ -1,54 +1,5 @@
 class Util {
     /**
-     * Compiles a provided string with interpolated dynamic values
-     * (e.g "Lorem ${foo.bar} dolor") into a template function which
-     * receives an arbitrary data object and returns a populated version
-     * of that string.
-     *
-     * @param   {string}    str
-     * @param   {boolean}   [isSingleValue=false]
-     * @return  {function}
-     */
-
-    static template(str, isSingleValue=false) {
-        const re       = /\${([\w.]*)}/g;
-        const dynamics = {};
-
-        let matches = null;
-
-        while ((matches = re.exec(str))) {
-            dynamics[matches[1]] = new RegExp('\\${' + matches[1] + '}', 'g');
-        }
-
-        /**
-         * @param   {object} data
-         * @return  {*}
-         */
-
-        return function(data) {
-            let key     = '';
-            let value   = '';
-            let output  = str;
-
-            data = data || {};
-
-            for (key in dynamics) {
-                value = Util.getValueByStringKey(key, data) || '';
-
-                if (isSingleValue) {
-                    // Break on the first dynamic and return raw value
-
-                    return value;
-                }
-
-                output = output.replace(dynamics[key], value);
-            }
-
-            return output;
-        };
-    }
-
-    /**
      * Retrieves a value from a provided object using a dot-notation
      * string key (e.g. "foo.bar").
      *

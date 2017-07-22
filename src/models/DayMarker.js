@@ -1,4 +1,4 @@
-import {DAYS} from '../ConstantsEn';
+import {DAYS} from '../LocaleEn';
 
 class DayMarker {
     constructor() {

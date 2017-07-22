@@ -5,6 +5,7 @@ class Dom {
         this.header          = null;
         this.calendar        = null;
         this.month           = null;
+        this.thead           = null;
         this.tbody           = null;
         this.buttonNextMonth = null;
         this.buttonPrevMonth = null;

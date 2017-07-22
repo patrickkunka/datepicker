@@ -147,10 +147,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
-	var _Actions = __webpack_require__(3);
-	
-	var Actions = _interopRequireWildcard(_Actions);
-	
 	var _ConfigRoot = __webpack_require__(6);
 	
 	var _ConfigRoot2 = _interopRequireDefault(_ConfigRoot);
@@ -179,13 +175,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	var _State2 = _interopRequireDefault(_State);
 	
-	var _Templates = __webpack_require__(18);
-	
-	var _Templates2 = _interopRequireDefault(_Templates);
-	
 	var _Util = __webpack_require__(5);
 	
 	var _Util2 = _interopRequireDefault(_Util);
+	
+	var _Button = __webpack_require__(25);
+	
+	var _Button2 = _interopRequireDefault(_Button);
 	
 	var _Month = __webpack_require__(19);
 	
@@ -203,9 +199,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	var _Week2 = _interopRequireDefault(_Week);
 	
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	var _Reducers = __webpack_require__(27);
+	
+	var _Reducers2 = _interopRequireDefault(_Reducers);
+	
+	var _Constants = __webpack_require__(26);
 	
 	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
 	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 	
@@ -414,18 +416,31 @@ return /******/ (function(modules) { // webpackBootstrap
 	        value: function handleHeaderClick(e) {
 	            var button = _Util2.default.closestParent(e.target, '[data-ref~="button"]', true);
 	
-	            var action = '';
+	            var actionType = '';
 	
 	            e.stopPropagation();
 	
 	            if (!button || this.isTransitioning) return;
 	
-	            action = button.getAttribute('data-action');
+	            actionType = button.getAttribute('data-action');
 	
-	            this.updateState(action);
+	            this.updateState(actionType);
 	        }
 	
 	        /**
+	         * @private
+	         * @param   {MouseEvent} e
+	         * @return  {void}
+	         */
+	
+	    }, {
+	        key: 'handleTheadClick',
+	        value: function handleTheadClick(e) {
+	            e.stopPropagation();
+	        }
+	
+	        /**
+	         * @private
 	         * @param   {MouseEvent} e
 	         * @return  {void}
 	         */
@@ -483,7 +498,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	        /**
 	         * @private
-	         * @param   {string} [action='']
+	         * @param   {string} [actionType='']
 	         * @return  {Promise}
 	         */
 	
@@ -492,18 +507,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	        value: function updateState() {
 	            var _this4 = this;
 	
-	            var action = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
+	            var actionType = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
 	
-	            var state = action ? Datepicker.getStateFromAction(this.state, action) : Datepicker.getStateFromDate(this.value);
+	            var state = actionType ? Datepicker.getStateFromAction(this.state, actionType) : Datepicker.getStateFromDate(this.value);
 	            var data = this.getMonthData(state);
 	            var html = this.render(data);
 	
 	            this.state = state;
 	
-	            return this.updateView(html, action).then(function () {
+	            return this.updateView(html, actionType).then(function () {
 	                var callback = null;
 	
-	                if (action) {
+	                if (actionType) {
 	                    callback = _this4.config.callbacks.onChangeView;
 	                }
 	
@@ -561,6 +576,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            this.dom.header = this.dom.root.querySelector('[data-ref="header"]');
 	            this.dom.calendar = this.dom.root.querySelector('[data-ref="calendar"]');
 	            this.dom.month = this.dom.root.querySelector('[data-ref="month"]');
+	            this.dom.thead = this.dom.root.querySelector('[data-ref="thead"]');
 	            this.dom.tbody = this.dom.root.querySelector('[data-ref="tbody"]');
 	        }
 	
@@ -628,15 +644,22 @@ return /******/ (function(modules) { // webpackBootstrap
 	            month.monthIndex = state.monthIndex;
 	            month.year = state.year;
 	
+	            // Iterate through weeks in month
+	
 	            for (var i = 0; i < totalWeeks; i++) {
 	                var week = new _Week2.default();
 	
 	                week.className = this.getClassName('week');
 	
+	                // For each week, iterate through days
+	
 	                for (var j = 0; j < 7; j++) {
 	                    // eslint-disable-line no-magic-numbers
 	                    var classList = [];
 	                    var day = new _Day2.default();
+	
+	                    // While we are in the first week, also push markers into
+	                    // `dayMakers` array (avoids duplicate iteration)
 	
 	                    if (i === 0) {
 	                        var marker = new _DayMarker2.default();
@@ -652,7 +675,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	                        marker.className = classList.join(' ');
 	
 	                        month.dayMarkers.push(marker);
+	
+	                        // Flush classlist
+	
+	                        classList.length = 0;
 	                    }
+	
+	                    // At the point we hit the first day in the month, move into
+	                    // "SELF" zone
 	
 	                    if (i === 0 && j === state.startDayIndex) {
 	                        zone = 'SELF';
@@ -660,11 +690,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	                        currentDayNumber = 1;
 	                    }
 	
+	                    // A the point we pass the last day in the month, move into
+	                    // "NEXT" zone
+	
 	                    if (i !== 0 && currentDayNumber > state.totalDays) {
 	                        zone = 'NEXT';
 	
 	                        currentDayNumber = 1;
 	                    }
+	
+	                    // Populate a day's data
 	
 	                    day.dayIndex = j;
 	                    day.dayNumber = currentDayNumber;
@@ -677,11 +712,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	                    day.monthNumber = state.monthIndex + 1;
 	
+	                    // If in the "PREV" or "NEXT" zones, ensure the day's
+	                    // month attribute is set accordingly
+	
 	                    if (zone === 'PREV') {
 	                        day.monthNumber--;
 	                    } else if (zone === 'NEXT') {
 	                        day.monthNumber++;
 	                    }
+	
+	                    // Build up the appropriate class names for the day
 	
 	                    classList.push(this.getClassName('day'));
 	
@@ -704,10 +744,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	                    day.className = classList.join(' ');
 	
+	                    // Increment current day number (i.e. calendar date, not index)
+	
 	                    currentDayNumber++;
+	
+	                    // Push day into week data
 	
 	                    week.days.push(day);
 	                }
+	
+	                // Push week into month data
 	
 	                month.weeks.push(week);
 	            }
@@ -724,10 +770,28 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }, {
 	        key: 'render',
 	        value: function render(data) {
-	            data.legendHtml = data.dayMarkers.map(_Templates2.default.marker).join('');
+	            data.buttonPrevYearHtml = this.renderButton(_Constants.ACTION_TYPE_GO_TO_PREV_YEAR, data.buttonPrevYearClassName);
+	            data.buttonPrevMonthHtml = this.renderButton(_Constants.ACTION_TYPE_GO_TO_PREV_MONTH, data.buttonPrevMonthClassName);
+	            data.buttonNextMonthHtml = this.renderButton(_Constants.ACTION_TYPE_GO_TO_NEXT_MONTH, data.buttonNextMonthClassName);
+	            data.buttonNextYearHtml = this.renderButton(_Constants.ACTION_TYPE_GO_TO_NEXT_YEAR, data.buttonNextYearClassName);
+	
+	            data.legendHtml = data.dayMarkers.map(this.config.templates.marker).join('');
 	            data.weeksHtml = data.weeks.map(this.renderWeek.bind(this)).join('');
 	
-	            return _Templates2.default.container(data);
+	            return this.config.templates.container(data);
+	        }
+	
+	        /**
+	         * @private
+	         * @param  {sring}  actionType
+	         * @param  {string} className
+	         * @return {string}
+	         */
+	
+	    }, {
+	        key: 'renderButton',
+	        value: function renderButton(actionType, className) {
+	            return this.config.templates.button(Object.assign(new _Button2.default(), { actionType: actionType, className: className }));
 	        }
 	
 	        /**
@@ -739,9 +803,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }, {
 	        key: 'renderWeek',
 	        value: function renderWeek(data) {
-	            data.daysHtml = data.days.map(_Templates2.default.day).join('');
+	            data.daysHtml = data.days.map(this.config.templates.day).join('');
 	
-	            return _Templates2.default.week(data);
+	            return this.config.templates.week(data);
 	        }
 	
 	        /**
@@ -835,13 +899,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	        /**
 	         * @private
 	         * @param   {string} html
-	         * @param   {string} action
+	         * @param   {string} actionType
 	         * @return  {void}
 	         */
 	
 	    }, {
 	        key: 'updateView',
-	        value: function updateView(html, action) {
+	        value: function updateView(html, actionType) {
 	            var _this8 = this;
 	
 	            return Promise.resolve().then(function () {
@@ -854,14 +918,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	                _this8.unbindEvents(_this8.bindingsCalendar);
 	
-	                if (action) {
+	                if (actionType) {
 	                    newHeader = temp.querySelector('[data-ref="header"]');
 	                    newMonth = temp.querySelector('[data-ref="month"]');
 	
 	                    _this8.dom.root.replaceChild(newHeader, _this8.dom.header);
 	                    _this8.dom.calendar.appendChild(newMonth, _this8.dom.month);
 	
-	                    return _this8.animateMonthTransition(_this8.dom.calendar.lastElementChild, _this8.dom.month, action);
+	                    return _this8.animateMonthTransition(_this8.dom.calendar.lastElementChild, _this8.dom.month, actionType);
 	                }
 	
 	                _this8.dom.root.innerHTML = temp.firstChild.innerHTML;
@@ -878,13 +942,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	         * @private
 	         * @param   {HTMLElement} newMonth
 	         * @param   {HTMLElement} oldMonth
-	         * @param   {string}      action
+	         * @param   {string}      actionType
 	         * @return  {Promise}
 	         */
 	
 	    }, {
 	        key: 'animateMonthTransition',
-	        value: function animateMonthTransition(newMonth, oldMonth, action) {
+	        value: function animateMonthTransition(newMonth, oldMonth, actionType) {
 	            var _this9 = this;
 	
 	            var parent = oldMonth.parentElement;
@@ -892,7 +956,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            return new Promise(function (resolve) {
 	                var duration = _this9.config.animation.duration;
 	                var easing = _this9.config.animation.easing;
-	                var translate = CssTranslates[action];
+	                var translate = CssTranslates[actionType];
 	
 	                _this9.isTransitioning = true;
 	
@@ -1072,21 +1136,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	        /**
 	         * @private
 	         * @static
-	         * @param   {State}   oldState
-	         * @param   {string}  type
+	         * @param   {State}   prevState
+	         * @param   {string}  actionType
 	         * @return  {State}
 	         */
 	
 	    }, {
 	        key: 'getStateFromAction',
-	        value: function getStateFromAction(oldState, type) {
-	            var fn = null;
-	
-	            if (typeof (fn = Actions[type]) !== 'function') {
-	                throw new Error('Action "' + type + '" not found');
-	            }
-	
-	            return Object.freeze(fn(oldState));
+	        value: function getStateFromAction(prevState, actionType) {
+	            return Object.freeze((0, _Reducers2.default)(prevState, { type: actionType }));
 	        }
 	
 	        /**
@@ -1138,70 +1196,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.default = Datepicker;
 
 /***/ },
-/* 3 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-	exports.GO_TO_PREV_YEAR = exports.GO_TO_NEXT_YEAR = exports.GO_TO_PREV_MONTH = exports.GO_TO_NEXT_MONTH = undefined;
-	
-	var _State = __webpack_require__(4);
-	
-	var _State2 = _interopRequireDefault(_State);
-	
-	var _Util = __webpack_require__(5);
-	
-	var _Util2 = _interopRequireDefault(_Util);
-	
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-	
-	var GO_TO_NEXT_MONTH = exports.GO_TO_NEXT_MONTH = function GO_TO_NEXT_MONTH(prevState) {
-	    var newState = _Util2.default.extend(new _State2.default(), prevState);
-	
-	    if (newState.monthIndex === 11) {
-	        // eslint-disable-line no-magic-numbers
-	        newState.monthIndex = 0;
-	        newState.year++;
-	    } else {
-	        newState.monthIndex++;
-	    }
-	
-	    return newState;
-	};
-	
-	var GO_TO_PREV_MONTH = exports.GO_TO_PREV_MONTH = function GO_TO_PREV_MONTH(prevState) {
-	    var newState = _Util2.default.extend(new _State2.default(), prevState);
-	
-	    if (newState.monthIndex === 0) {
-	        newState.monthIndex = 11;
-	        newState.year--;
-	    } else {
-	        newState.monthIndex--;
-	    }
-	
-	    return newState;
-	};
-	
-	var GO_TO_NEXT_YEAR = exports.GO_TO_NEXT_YEAR = function GO_TO_NEXT_YEAR(prevState) {
-	    var newState = _Util2.default.extend(new _State2.default(), prevState);
-	
-	    newState.year++;
-	
-	    return newState;
-	};
-	
-	var GO_TO_PREV_YEAR = exports.GO_TO_PREV_YEAR = function GO_TO_PREV_YEAR(prevState) {
-	    var newState = _Util2.default.extend(new _State2.default(), prevState);
-	
-	    newState.year--;
-	
-	    return newState;
-	};
-
-/***/ },
+/* 3 */,
 /* 4 */
 /***/ function(module, exports) {
 
@@ -1283,58 +1278,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	
 	    _createClass(Util, null, [{
-	        key: 'template',
-	
-	        /**
-	         * Compiles a provided string with interpolated dynamic values
-	         * (e.g "Lorem ${foo.bar} dolor") into a template function which
-	         * receives an arbitrary data object and returns a populated version
-	         * of that string.
-	         *
-	         * @param   {string}    str
-	         * @param   {boolean}   [isSingleValue=false]
-	         * @return  {function}
-	         */
-	
-	        value: function template(str) {
-	            var isSingleValue = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
-	
-	            var re = /\${([\w.]*)}/g;
-	            var dynamics = {};
-	
-	            var matches = null;
-	
-	            while (matches = re.exec(str)) {
-	                dynamics[matches[1]] = new RegExp('\\${' + matches[1] + '}', 'g');
-	            }
-	
-	            /**
-	             * @param   {object} data
-	             * @return  {*}
-	             */
-	
-	            return function (data) {
-	                var key = '';
-	                var value = '';
-	                var output = str;
-	
-	                data = data || {};
-	
-	                for (key in dynamics) {
-	                    value = Util.getValueByStringKey(key, data) || '';
-	
-	                    if (isSingleValue) {
-	                        // Break on the first dynamic and return raw value
-	
-	                        return value;
-	                    }
-	
-	                    output = output.replace(dynamics[key], value);
-	                }
-	
-	                return output;
-	            };
-	        }
+	        key: 'getValueByStringKey',
 	
 	        /**
 	         * Retrieves a value from a provided object using a dot-notation
@@ -1345,8 +1289,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	         * @return  {*}
 	         */
 	
-	    }, {
-	        key: 'getValueByStringKey',
 	        value: function getValueByStringKey(stringKey, data) {
 	            var parts = stringKey.split('.');
 	
@@ -1545,6 +1487,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	var _ConfigClassNames2 = _interopRequireDefault(_ConfigClassNames);
 	
+	var _ConfigTemplates = __webpack_require__(24);
+	
+	var _ConfigTemplates2 = _interopRequireDefault(_ConfigTemplates);
+	
 	var _ConfigTransform = __webpack_require__(11);
 	
 	var _ConfigTransform2 = _interopRequireDefault(_ConfigTransform);
@@ -1560,6 +1506,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    this.behavior = new _ConfigBehavior2.default();
 	    this.callbacks = new _ConfigCallbacks2.default();
 	    this.classNames = new _ConfigClassNames2.default();
+	    this.templates = new _ConfigTemplates2.default();
 	    this.transform = new _ConfigTransform2.default();
 	
 	    Object.seal(this);
@@ -1775,6 +1722,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    this.header = null;
 	    this.calendar = null;
 	    this.month = null;
+	    this.thead = null;
 	    this.tbody = null;
 	    this.buttonNextMonth = null;
 	    this.buttonPrevMonth = null;
@@ -1839,6 +1787,11 @@ return /******/ (function(modules) { // webpackBootstrap
 			"bind": "handleHeaderClick"
 		},
 		{
+			"el": "thead",
+			"on": "click",
+			"bind": "handleTheadClick"
+		},
+		{
 			"el": "tbody",
 			"on": "click",
 			"bind": "handleTbodyClick"
@@ -1847,29 +1800,31 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ },
 /* 18 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ function(module, exports) {
 
-	'use strict';
+	"use strict";
 	
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
+	/* eslint-disable max-len */
 	
-	var _Util = __webpack_require__(5);
+	var day = exports.day = function day(_day) {
+	    return "<td class=\"" + _day.className + "\" data-ref=\"day\" data-month=\"" + _day.monthNumber + "\" data-day=\"" + _day.dayNumber + "\">" + _day.dayNumber + "</td>";
+	};
+	var marker = exports.marker = function marker(_marker) {
+	    return "<th class=\"" + _marker.className + "\">" + _marker.dayShortName + "</th>";
+	};
+	var week = exports.week = function week(_week) {
+	    return "<tr class=\"" + _week.className + "\">" + _week.daysHtml + "</tr>";
+	};
+	var button = exports.button = function button(_button) {
+	    return "<button class=\"" + _button.className + "\" type=\"button\" data-ref=\"button\" data-action=\"" + _button.actionType + "\"></button>";
+	};
 	
-	var _Util2 = _interopRequireDefault(_Util);
-	
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-	
-	var Templates = {}; /* eslint-disable max-len */
-	
-	Templates.day = _Util2.default.template('<td class="${className}" data-ref="day" data-month="${monthNumber}" data-day="${dayNumber}">${dayNumber}</td>');
-	Templates.marker = _Util2.default.template('<th class="${className}">${dayShortName}</th>');
-	Templates.week = _Util2.default.template('<tr class="${className}">${daysHtml}</tr>');
-	
-	Templates.container = _Util2.default.template('<div class="${containerClassName}">' + '<header data-ref="header" class="${headerClassName}">' + '<span class="${buttonGroupClassName}">' + '<button class="${buttonPrevYearClassName}" type="button" data-ref="button" data-action="GO_TO_PREV_YEAR"></button> ' + '<button class="${buttonPrevMonthClassName}" type="button" data-ref="button" data-action="GO_TO_PREV_MONTH"></button> ' + '</span> ' + '<span class="${headingClassName}">${monthName} ${year}</span> ' + '<span class="${buttonGroupClassName}">' + '<button class="${buttonNextMonthClassName}" type="button" data-ref="button" data-action="GO_TO_NEXT_MONTH"></button> ' + '<button class="${buttonNextYearClassName}" type="button" data-ref="button" data-action="GO_TO_NEXT_YEAR"></button>' + '</span>' + '</header>' + '<div class="${calendarClassName}" data-ref="calendar">' + '<table class="${monthClassName}" data-ref="month">' + '<thead>' + '<tr>${legendHtml}</tr>' + '</thead>' + '<tbody data-ref="tbody">${weeksHtml}</tbody>' + '</table>' + '</div>' + '</div>');
-	
-	exports.default = Templates;
+	var container = exports.container = function container(month) {
+	    return "<div class=\"" + month.containerClassName + "\">\n        <header data-ref=\"header\" class=\"" + month.headerClassName + "\">\n            <span class=\"" + month.buttonGroupClassName + "\">\n                " + month.buttonPrevYearHtml + "\n                " + month.buttonPrevMonthHtml + "\n            </span>\n            <span class=\"" + month.headingClassName + "\">" + month.monthName + " " + month.year + "</span>\n            <span class=\"" + month.buttonGroupClassName + "\">\n                " + month.buttonNextMonthHtml + "\n                " + month.buttonNextYearHtml + "\n            </span>\n        </header>\n        <div class=\"" + month.calendarClassName + "\" data-ref=\"calendar\">\n            <table class=\"" + month.monthClassName + "\" data-ref=\"month\">\n                <thead data-ref=\"thead\">\n                    <tr>" + month.legendHtml + "</tr>\n                </thead>\n                <tbody data-ref=\"tbody\">" + month.weeksHtml + "</tbody>\n            </table>\n        </div>\n    </div>";
+	};
 
 /***/ },
 /* 19 */
@@ -1883,7 +1838,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
-	var _ConstantsEn = __webpack_require__(20);
+	var _LocaleEn = __webpack_require__(28);
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
@@ -1895,6 +1850,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.dayMarkers = [];
 	        this.monthIndex = -1;
 	        this.year = -1;
+	        this.buttonPrevYearHtml = '';
+	        this.buttonPrevMonthHtml = '';
+	        this.buttonNextMonthHtml = '';
+	        this.buttonNextYearHtml = '';
 	        this.weeksHtml = '';
 	        this.legendHtml = '';
 	        this.calendarClassName = '';
@@ -1914,7 +1873,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    _createClass(Month, [{
 	        key: 'monthName',
 	        get: function get() {
-	            return _ConstantsEn.MONTHS[this.monthIndex];
+	            return _LocaleEn.MONTHS[this.monthIndex];
 	        }
 	    }]);
 	
@@ -1924,19 +1883,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.default = Month;
 
 /***/ },
-/* 20 */
-/***/ function(module, exports) {
-
-	'use strict';
-	
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-	var MONTHS = exports.MONTHS = ['January', 'February', 'March', 'April', 'May', 'Jun', 'July', 'August', 'September', 'October', 'November', 'December'];
-	
-	var DAYS = exports.DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-
-/***/ },
+/* 20 */,
 /* 21 */
 /***/ function(module, exports) {
 
@@ -1976,7 +1923,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
-	var _ConstantsEn = __webpack_require__(20);
+	var _LocaleEn = __webpack_require__(28);
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
@@ -1993,7 +1940,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    _createClass(DayMarker, [{
 	        key: 'dayName',
 	        get: function get() {
-	            return _ConstantsEn.DAYS[this.dayIndex];
+	            return _LocaleEn.DAYS[this.dayIndex];
 	        }
 	    }, {
 	        key: 'dayShortName',
@@ -2030,6 +1977,147 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 	
 	exports.default = Week;
+
+/***/ },
+/* 24 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	
+	var _Templates = __webpack_require__(18);
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	var ConfigTemplates = function ConfigTemplates() {
+	    _classCallCheck(this, ConfigTemplates);
+	
+	    this.container = _Templates.container;
+	    this.week = _Templates.week;
+	    this.day = _Templates.day;
+	    this.marker = _Templates.marker;
+	    this.button = _Templates.button;
+	
+	    Object.seal(this);
+	};
+	
+	exports.default = ConfigTemplates;
+
+/***/ },
+/* 25 */
+/***/ function(module, exports) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	var Button = function Button() {
+	    _classCallCheck(this, Button);
+	
+	    this.className = '';
+	    this.actionType = '';
+	
+	    Object.seal(this);
+	};
+	
+	exports.default = Button;
+
+/***/ },
+/* 26 */
+/***/ function(module, exports) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	var ACTION_TYPE_GO_TO_NEXT_MONTH = exports.ACTION_TYPE_GO_TO_NEXT_MONTH = 'GO_TO_NEXT_MONTH';
+	var ACTION_TYPE_GO_TO_PREV_MONTH = exports.ACTION_TYPE_GO_TO_PREV_MONTH = 'GO_TO_PREV_MONTH';
+	var ACTION_TYPE_GO_TO_NEXT_YEAR = exports.ACTION_TYPE_GO_TO_NEXT_YEAR = 'GO_TO_NEXT_YEAR';
+	var ACTION_TYPE_GO_TO_PREV_YEAR = exports.ACTION_TYPE_GO_TO_PREV_YEAR = 'GO_TO_PREV_YEAR';
+
+/***/ },
+/* 27 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	exports.root = undefined;
+	
+	var _State = __webpack_require__(4);
+	
+	var _State2 = _interopRequireDefault(_State);
+	
+	var _Util = __webpack_require__(5);
+	
+	var _Util2 = _interopRequireDefault(_Util);
+	
+	var _Constants = __webpack_require__(26);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	var root = exports.root = function root(prevState, action) {
+	    var newState = _Util2.default.extend(new _State2.default(), prevState);
+	
+	    switch (action.type) {
+	        case _Constants.ACTION_TYPE_GO_TO_NEXT_MONTH:
+	            if (newState.monthIndex === 11) {
+	                // eslint-disable-line no-magic-numbers
+	                newState.monthIndex = 0;
+	                newState.year++;
+	            } else {
+	                newState.monthIndex++;
+	            }
+	
+	            break;
+	        case _Constants.ACTION_TYPE_GO_TO_PREV_MONTH:
+	            if (newState.monthIndex === 0) {
+	                newState.monthIndex = 11;
+	                newState.year--;
+	            } else {
+	                newState.monthIndex--;
+	            }
+	
+	            break;
+	        case _Constants.ACTION_TYPE_GO_TO_NEXT_YEAR:
+	            newState.year++;
+	
+	            break;
+	        case _Constants.ACTION_TYPE_GO_TO_PREV_YEAR:
+	            newState.year--;
+	
+	            break;
+	        default:
+	            throw new RangeError('[Datepicker] Unknown action type "' + action.type + '"');
+	    }
+	
+	    return newState;
+	};
+	
+	exports.default = root;
+
+/***/ },
+/* 28 */
+/***/ function(module, exports) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	var MONTHS = exports.MONTHS = ['January', 'February', 'March', 'April', 'May', 'Jun', 'July', 'August', 'September', 'October', 'November', 'December'];
+	
+	var DAYS = exports.DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
 /***/ }
 /******/ ])

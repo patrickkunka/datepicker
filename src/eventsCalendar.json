@@ -9,6 +9,11 @@
         "bind": "handleHeaderClick"
     },
     {
+        "el": "thead",
+        "on": "click",
+        "bind": "handleTheadClick"
+    },
+    {
         "el": "tbody",
         "on": "click",
         "bind": "handleTbodyClick"
