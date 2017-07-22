@@ -61,7 +61,7 @@ datepicker(input, {
         duration: 100
     },
     transform: {
-        input: value => moment(value, 'YYYY/MM/DD').toISOString();
+        input: value => moment(value, 'YYYY/MM/DD').toISOString(),
         output: value => moment(value).format('YYYY/MM/DD')
     }
 });
